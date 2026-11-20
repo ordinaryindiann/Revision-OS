@@ -24,6 +24,7 @@
       --ros-accent-text: #0F1117;
       --ros-danger: #EF4444;
       --ros-warn: #F59E0B;
+      --ros-info: #38BDF8;
 
       --ros-font: Inter, Manrope, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       --ros-radius-sm: 8px;
@@ -42,6 +43,7 @@
       --ros-accent-text: #FFFFFF;
       --ros-danger: #DC2626;
       --ros-warn: #D97706;
+      --ros-info: #0284C7;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -54,7 +56,7 @@
       transition: background 0.2s ease, color 0.2s ease;
     }
 
-    .container { max-width: 1220px; margin: 0 auto; padding: 18px 16px 72px; }
+    .container { max-width: 1240px; margin: 0 auto; padding: 18px 16px 76px; }
 
     /* Top Header */
     .topbar {
@@ -99,7 +101,7 @@
 
     /* Executive Dashboard Grid */
     .dash-top {
-      display: grid; grid-template-columns: 300px 1fr; gap: 16px; margin-bottom: 18px;
+      display: grid; grid-template-columns: 290px 1fr; gap: 16px; margin-bottom: 18px;
     }
     @media (max-width: 900px) { .dash-top { grid-template-columns: 1fr; } }
 
@@ -171,7 +173,7 @@
     /* Controls Toolbar */
     .toolbar {
       display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
-      gap: 12px; margin-bottom: 20px; padding: 12px 16px;
+      gap: 12px; margin-bottom: 22px; padding: 12px 16px;
       background: var(--ros-surface); border: 1px solid var(--ros-border);
       border-radius: var(--ros-radius-md);
     }
@@ -190,54 +192,112 @@
       background: var(--ros-bg); color: var(--ros-text);
       border: 1px solid var(--ros-border); border-radius: var(--ros-radius-sm);
     }
-    .search-box { flex: 1; min-width: 210px; max-width: 340px; }
+    .search-box { flex: 1; min-width: 210px; max-width: 320px; }
     .search-box:focus, .text-input:focus { outline: none; border-color: var(--ros-accent); }
     select.curve-select {
-      padding: 7px 10px; font-size: 0.79rem; border-radius: 6px; min-width: 190px;
+      padding: 7px 10px; font-size: 0.79rem; border-radius: 6px; min-width: 185px;
       background: var(--ros-bg); color: var(--ros-text); border: 1px solid var(--ros-border);
     }
 
-    /* Pillar Groups & Subject Accordions */
-    .pillar-section { margin-bottom: 24px; }
+    /* Pillar Sections & Tile Grid */
+    .pillar-section { margin-bottom: 28px; }
     .pillar-header {
       display: flex; align-items: center; justify-content: space-between;
-      padding: 6px 4px 10px; margin-bottom: 10px;
+      padding: 6px 4px 10px; margin-bottom: 14px;
       border-bottom: 1px solid var(--ros-border);
     }
     .pillar-title {
-      font-size: 0.78rem; font-weight: 800; letter-spacing: 0.12em;
+      font-size: 0.8rem; font-weight: 800; letter-spacing: 0.12em;
       text-transform: uppercase; color: var(--ros-accent);
     }
 
-    .subject-card {
-      background: var(--ros-surface); border: 1px solid var(--ros-border);
-      border-radius: var(--ros-radius-md); margin-bottom: 10px; overflow: hidden;
+    .subject-tile-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 14px;
     }
-    .subject-head {
-      display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
-      gap: 10px; padding: 13px 16px; cursor: pointer; user-select: none;
-    }
-    .subject-head:hover { background: var(--ros-surface-raised); }
-    .subj-meta { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-    .chev { font-size: 0.75rem; color: var(--ros-text-muted); width: 14px; }
-    .subj-name { font-weight: 700; font-size: 0.96rem; }
-    .count-chip {
-      font-size: 0.72rem; padding: 2px 8px; border-radius: 999px;
-      background: var(--ros-surface-raised); color: var(--ros-text-muted); border: 1px solid var(--ros-border);
-    }
-    .prog-wrap { display: flex; align-items: center; gap: 10px; min-width: 170px; }
 
-    .chapter-list { border-top: 1px solid var(--ros-border); padding: 8px 16px 14px; }
+    .subject-tile {
+      background: var(--ros-surface);
+      border: 1px solid var(--ros-border);
+      border-radius: var(--ros-radius-md);
+      padding: 16px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 12px;
+      transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+    }
+    .subject-tile:hover {
+      transform: translateY(-2px);
+      border-color: var(--ros-accent);
+      background: var(--ros-surface-raised);
+    }
+    .tile-top {
+      display: flex; align-items: flex-start; justify-content: space-between; gap: 8px;
+    }
+    .tile-title {
+      font-size: 1.02rem; font-weight: 700; line-height: 1.3;
+    }
+    .tile-stats {
+      display: flex; align-items: center; justify-content: space-between;
+      font-size: 0.76rem; color: var(--ros-text-muted); margin-bottom: 6px;
+    }
+    .tile-footer {
+      display: flex; align-items: center; justify-content: space-between; gap: 8px;
+      padding-top: 10px; border-top: 1px solid var(--ros-border);
+      font-size: 0.74rem; color: var(--ros-text-muted);
+    }
+    .open-chip {
+      color: var(--ros-accent); font-weight: 700; font-size: 0.75rem;
+    }
+
+    /* Subject Drawer / Chapter Workspace Modal */
+    .chapter-workspace-head {
+      display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+      gap: 12px; padding-bottom: 14px; margin-bottom: 14px;
+      border-bottom: 1px solid var(--ros-border);
+    }
     .chapter-row {
       display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
-      gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--ros-border);
+      gap: 12px; padding: 12px; margin-bottom: 8px;
+      background: var(--ros-surface-raised);
+      border: 1px solid var(--ros-border);
+      border-radius: var(--ros-radius-sm);
     }
-    .chapter-row:last-of-type { border-bottom: none; }
-    .ch-title { font-size: 0.87rem; font-weight: 600; }
-    .ch-sub { font-size: 0.74rem; color: var(--ros-text-muted); margin-top: 2px; }
+    .ch-left { flex: 1; min-width: 220px; }
+    .ch-title-line { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .ch-title { font-size: 0.9rem; font-weight: 600; }
+    .ch-sub { font-size: 0.74rem; color: var(--ros-text-muted); margin-top: 4px; }
+
+    .ch-controls {
+      display: flex; flex-wrap: wrap; align-items: center; gap: 10px;
+    }
+
+    /* Priority Pill Selector */
+    .prio-btn {
+      padding: 3px 8px; border-radius: 6px; font-size: 0.7rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.04em; cursor: pointer;
+      border: 1px solid transparent; transition: all 0.12s;
+    }
+    .prio-critical { background: rgba(239, 68, 68, 0.16); color: #F87171; border-color: rgba(239, 68, 68, 0.4); }
+    .prio-high { background: rgba(245, 158, 11, 0.16); color: #FBBF24; border-color: rgba(245, 158, 11, 0.4); }
+    .prio-moderate { background: rgba(56, 189, 248, 0.14); color: #38BDF8; border-color: rgba(56, 189, 248, 0.35); }
+
+    /* Confidence Stars */
+    .stars-wrap { display: inline-flex; align-items: center; gap: 2px; }
+    .star-btn {
+      background: none; border: none; cursor: pointer; font-size: 0.95rem;
+      color: var(--ros-border); padding: 0 1px; line-height: 1; transition: transform 0.1s;
+    }
+    .star-btn:hover { transform: scale(1.18); }
+    .star-btn.active { color: #FBBF24; }
+
+    /* Reading Pills */
     .pills { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }
     .r-pill {
-      width: 28px; height: 26px; border-radius: 6px; font-size: 0.72rem; font-weight: 700;
+      width: 27px; height: 25px; border-radius: 6px; font-size: 0.71rem; font-weight: 700;
       border: 1px solid var(--ros-border); background: var(--ros-bg); color: var(--ros-text-muted);
       cursor: pointer; transition: all 0.12s;
     }
@@ -245,18 +305,18 @@
     .r-pill.done { background: var(--ros-accent); color: var(--ros-accent-text); border-color: var(--ros-accent); }
 
     .inline-add {
-      display: flex; gap: 8px; padding-top: 10px; margin-top: 6px;
+      display: flex; gap: 8px; padding-top: 12px; margin-top: 10px;
       border-top: 1px dashed var(--ros-border);
     }
 
-    /* Blank Slate Empty State */
+    /* Blank Slate Hero */
     .empty-hero {
       text-align: center; padding: 48px 24px;
       background: var(--ros-surface); border: 1px dashed var(--ros-border);
       border-radius: var(--ros-radius-lg);
     }
     .empty-hero h2 { font-size: 1.25rem; margin-bottom: 8px; }
-    .empty-hero p { color: var(--ros-text-muted); font-size: 0.88rem; max-width: 540px; margin: 0 auto 20px; }
+    .empty-hero p { color: var(--ros-text-muted); font-size: 0.88rem; max-width: 560px; margin: 0 auto 20px; }
     .empty-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
 
     /* Dropzone */
@@ -269,16 +329,16 @@
 
     /* Modals */
     .modal-overlay {
-      display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.76);
+      display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.78);
       z-index: 1000; align-items: center; justify-content: center; padding: 16px;
     }
     .modal-overlay.open { display: flex; }
     .modal {
       background: var(--ros-surface); border: 1px solid var(--ros-border);
       border-radius: var(--ros-radius-lg); width: 100%; max-width: 680px;
-      max-height: 88vh; overflow-y: auto; padding: 22px;
+      max-height: 90vh; overflow-y: auto; padding: 22px;
     }
-    .modal.wide { max-width: 980px; }
+    .modal.wide { max-width: 1020px; }
     .modal-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
     .input-row { display: grid; grid-template-columns: repeat(9, 1fr); gap: 6px; margin: 10px 0; }
     .num-in {
@@ -332,7 +392,8 @@
         <div id="authArea">
           <button class="btn btn-accent" id="btnSignIn">Sign in with Google</button>
         </div>
-        <button class="btn btn-accent" id="btnImportExcel">Import Excel / CSV</button>
+        <button class="btn btn-accent" id="btnLoadUPSC" title="Load your categorized 148-chapter UPSC syllabus">Load My 148 UPSC Syllabus</button>
+        <button class="btn" id="btnImportExcel">Import Excel / CSV</button>
         <button class="btn" id="btnManageSyllabus">+ Subject / Chapter</button>
         <button class="btn" id="btnCurves">Curves &amp; Cycles</button>
         <button class="btn" id="btnMindMap">Mind Map</button>
@@ -357,13 +418,13 @@
             <div class="ring-lbl">Retention</div>
           </div>
         </div>
-        <div class="kpi-sub" id="ringSub">Add or import chapters to begin</div>
+        <div class="kpi-sub" id="ringSub">Load UPSC syllabus or import Excel</div>
       </div>
 
       <div class="card" style="display:flex;flex-direction:column;justify-content:space-between">
         <div class="section-title" style="margin-bottom:10px">
           <span>Executive Readiness Telemetry</span>
-          <span class="kpi-sub" id="telemetrySubjects">0 Subjects • 0 Pillars</span>
+          <span class="kpi-sub" id="telemetrySubjects">0 Subjects • 0 Categories</span>
         </div>
         <div class="kpi-subgrid">
           <div class="mini-kpi">
@@ -379,11 +440,11 @@
           <div class="mini-kpi">
             <div class="kpi-label">Due Today / Overdue</div>
             <div class="kpi-val" id="kpiDue"><span>0</span></div>
-            <div class="kpi-sub">Immediate recall priority</div>
+            <div class="kpi-sub" id="kpiCriticalCount">0 Critical priority chapters</div>
           </div>
           <div class="mini-kpi">
-            <div class="kpi-label">Active Cycle Mode</div>
-            <div class="kpi-val" style="font-size:1.15rem;margin-top:7px" id="kpiMode"><span>General</span> Revise</div>
+            <div class="kpi-label">Avg Confidence Score</div>
+            <div class="kpi-val" id="kpiConfidence"><span>0.0</span> / 5 ★</div>
             <div class="kpi-sub" id="kpiCurveLabel">Standard Spaced Curve</div>
           </div>
         </div>
@@ -425,14 +486,71 @@
           <button class="mode-btn" id="modeSubject">Mode 2: Subject-Specific</button>
         </div>
         <select class="curve-select" id="globalCurveSelect"></select>
-        <button class="btn btn-sm" id="btnExpandAll">Expand All</button>
-        <button class="btn btn-sm" id="btnCollapseAll">Collapse All</button>
+        <select class="curve-select" id="priorityFilter" style="min-width:155px">
+          <option value="all">All Priorities</option>
+          <option value="Critical">Critical Only</option>
+          <option value="High">High Only</option>
+          <option value="Moderate">Moderate Only</option>
+        </select>
       </div>
-      <input type="search" class="search-box" id="searchInput" placeholder="Filter subjects, pillars, or chapters..." />
+      <input type="search" class="search-box" id="searchInput" placeholder="Search subjects, pillars, or chapters..." />
     </section>
 
-    <!-- Categorized Syllabus Container -->
+    <!-- Subject Tiles Container -->
     <main id="syllabusContainer"></main>
+  </div>
+
+  <!-- Subject Chapters Tile Modal (Opens when clicking any Subject Tile) -->
+  <div class="modal-overlay" id="modalSubjectWorkspace">
+    <div class="modal wide">
+      <div class="chapter-workspace-head">
+        <div>
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            <h2 id="wsSubjectTitle" style="font-size:1.3rem">Subject</h2>
+            <span class="badge" id="wsSubjectPillar">Pillar</span>
+          </div>
+          <div class="kpi-sub" id="wsSubjectStats" style="margin-top:4px">0/0 chapters initiated</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+          <div id="wsSubjectCurveWrap"></div>
+          <button class="btn btn-danger" id="wsDeleteSubject">Delete Subject</button>
+          <button class="btn btn-accent" data-close="modalSubjectWorkspace">Done &amp; Close</button>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">
+        <input type="search" class="search-box" id="wsChapterSearch" style="max-width:100%" placeholder="Filter chapters inside this subject..." />
+      </div>
+
+      <div id="wsChaptersList" style="max-height:54vh;overflow-y:auto;padding-right:4px"></div>
+
+      <div class="inline-add">
+        <input type="text" class="text-input" id="wsNewChapterTitle" style="flex:1" placeholder="Add a new chapter to this subject..." />
+        <select class="curve-select" id="wsNewChapterPrio" style="min-width:130px">
+          <option value="Moderate">Moderate</option>
+          <option value="High">High</option>
+          <option value="Critical">Critical</option>
+        </select>
+        <button class="btn btn-accent" id="wsAddChapterBtn">+ Add Chapter</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Transfer / Move Chapter Modal -->
+  <div class="modal-overlay" id="modalTransfer">
+    <div class="modal" style="max-width:460px">
+      <div class="modal-head">
+        <h3>Move / Transfer Chapter</h3>
+        <button class="btn" data-close="modalTransfer">Cancel</button>
+      </div>
+      <p class="kpi-sub" style="margin-bottom:10px">Transferring: <strong id="transferChapterLabel" style="color:var(--ros-text)"></strong></p>
+      <label class="kpi-label">Select Destination Subject</label>
+      <select id="transferTargetSubject" class="curve-select" style="width:100%;margin:8px 0 16px"></select>
+      <div style="display:flex;justify-content:flex-end;gap:8px">
+        <button class="btn" data-close="modalTransfer">Cancel</button>
+        <button class="btn btn-accent" id="btnConfirmTransfer">Move Chapter</button>
+      </div>
+    </div>
   </div>
 
   <!-- Excel / CSV Import Modal -->
@@ -443,7 +561,7 @@
         <button class="btn" data-close="modalImport">Close</button>
       </div>
       <p class="kpi-sub" style="margin-bottom:12px">
-        Upload an <strong>.xlsx</strong>, <strong>.xls</strong>, or <strong>.csv</strong> file where <strong>Column A (Cell 1)</strong> is the <strong>Subject Name</strong> and <strong>Column B (Cell 2)</strong> is the <strong>Chapter Name</strong>. Subjects are automatically categorized into Pillars.
+        Upload an <strong>.xlsx</strong>, <strong>.xls</strong>, or <strong>.csv</strong> file where <strong>Column A (Cell 1)</strong> is the <strong>Subject Name</strong> and <strong>Column B (Cell 2)</strong> is the <strong>Chapter Name</strong>.
       </p>
 
       <div class="dropzone" id="excelDropzone">
@@ -476,10 +594,10 @@
       </div>
 
       <div style="margin-bottom:18px;padding-bottom:14px;border-bottom:1px solid var(--ros-border)">
-        <div class="kpi-label" style="margin-bottom:8px">1. Create New Subject</div>
+        <div class="kpi-label" style="margin-bottom:8px">1. Create New Subject Tile</div>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
           <input type="text" id="newSubjectName" class="text-input" style="flex:1;min-width:180px" placeholder="Subject name (e.g., Indian Polity)" />
-          <input type="text" id="newSubjectPillar" class="text-input" style="width:190px" placeholder="Category / Pillar (auto-detected if blank)" />
+          <input type="text" id="newSubjectPillar" class="text-input" style="width:200px" placeholder="Category / Pillar (auto if blank)" />
           <button class="btn btn-accent" id="btnAddSubject">Add Subject</button>
         </div>
       </div>
@@ -520,19 +638,19 @@
         <h3>Syllabus Mind Map &amp; Pillar Architecture</h3>
         <button class="btn" data-close="modalMindMap">Close</button>
       </div>
-      <p class="kpi-sub" style="margin-bottom:12px">Visual overview of your categorized subjects, chapters, and mastery progress.</p>
+      <p class="kpi-sub" style="margin-bottom:12px">Visual overview of your categorized subject tiles, confidence ratings, and mastery progress.</p>
       <div class="mindmap-canvas">
         <div class="mm-grid" id="mindMapGrid"></div>
       </div>
     </div>
   </div>
 
-  <!-- SheetJS for native .xlsx / .xls parsing (loaded asynchronously, non-blocking) -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js" defer></script>
 
   <script>
-    const STORAGE_KEY = 'reviseos_blank_v2';
+    const STORAGE_KEY = 'reviseos_tiles_v3';
     const THEME_KEY = 'reviseos_theme_v1';
+    const OWNER_EMAIL = 'shivamvyadav999@gmail.com';
 
     const DEFAULT_TEMPLATES = {
       standard: { name: 'Standard Spaced (1-3-7-14-30-45-60-90-120d)', days: [1, 3, 7, 14, 30, 45, 60, 90, 120] },
@@ -540,16 +658,178 @@
       longterm: { name: 'Long-Term Retention (2-5-12-25-45-75-110-150-180d)', days: [2, 5, 12, 25, 45, 75, 110, 150, 180] }
     };
 
-    // Intelligent Subject -> Category / Pillar Classifier
+    const UPSC_PILLARS = {
+      'Economy & Social Dev': 'Polity & Economy',
+      'Indian Polity': 'Polity & Economy',
+      'Modern History': 'History & Culture',
+      'Ancient History': 'History & Culture',
+      'Medieval History': 'History & Culture',
+      'World Geography': 'Geography & Environment',
+      'Indian Geography': 'Geography & Environment',
+      'Environment & Ecology': 'Geography & Environment',
+      'Physics': 'General Science',
+      'Chemistry': 'General Science'
+    };
+
+    const RAW_UPSC_148 = [
+      ["Economy & Social Dev", "Social Development - (ii) Employment and Welfare Schemes", 0],
+      ["Economy & Social Dev", "Social Development - (iii) Poverty & Unemployment", 0],
+      ["Economy & Social Dev", "Social Development - (i) Human Development", 0],
+      ["Economy & Social Dev", "Economic Development - (i) Nature of Indian Economy", 0],
+      ["Economy & Social Dev", "Demography - (i) India : Population", 0],
+      ["Economy & Social Dev", "Economic Development - (ix) Money & Banking", 0],
+      ["Economy & Social Dev", "Economic Development - (vii) Fiscal Policy & Revenue", 0],
+      ["Economy & Social Dev", "Economic Development - (iv) Agriculture and Allied Sectors", 0],
+      ["Economy & Social Dev", "External Sector - (iii) International Organizations", 0],
+      ["Economy & Social Dev", "Economic Development - (iii) Sustainable Economic Development", 0],
+      ["Economy & Social Dev", "budget- India", 0],
+      ["Economy & Social Dev", "eco survey", 0],
+      ["Economy & Social Dev", "UP BUDGET", 0],
+      ["Economy & Social Dev", "FC REPORT", 0],
+      ["Indian Polity", "Panchayati Raj and Community Development", 0],
+      ["Indian Polity", "The Parliament", 0],
+      ["Indian Polity", "States and Union Territories", 0],
+      ["Indian Polity", "Fundamental Rights", 0],
+      ["Indian Polity", "The Supreme Court", 0],
+      ["Indian Polity", "Directive Principles of State Policy", 0],
+      ["Indian Polity", "Constitutional Amendments", 0],
+      ["Indian Polity", "Schedules", 0],
+      ["Indian Polity", "The Parliamentary Act", 0],
+      ["Indian Polity", "The Governance System", 0],
+      ["Indian Polity", "Lokpal and Important Commissions", 0],
+      ["Indian Polity", "Election Commission", 0],
+      ["Indian Polity", "The President", 0],
+      ["Indian Polity", "The Finance Commission", 0],
+      ["Indian Polity", "Articles of the Constitution", 0],
+      ["Indian Polity", "The Centre-State Relations", 0],
+      ["Indian Polity", "Parliamentary Committees", 0],
+      ["Indian Polity", "The Governor", 0],
+      ["Indian Polity", "Official Language", 0],
+      ["Indian Polity", "Parts of Indian Constitution", 0],
+      ["Physics", "Electric current", 0],
+      ["Physics", "Optics", 0],
+      ["Physics", "Heat and Thermodynamics", 0],
+      ["Physics", "Nuclear Physics", 0],
+      ["Physics", "Wave motion", 0],
+      ["Physics", "Space", 0],
+      ["Physics", "Scientists & Inventions", 0],
+      ["Physics", "Mechanics", 0],
+      ["Physics", "Sound", 0],
+      ["Modern History", "Social Religious Movement", 0],
+      ["Modern History", "Governor/Governor General/ Viceroy", 0],
+      ["Modern History", "Other Civil Uprisings", 0],
+      ["Modern History", "Revolutionary Movement in India", 0],
+      ["Modern History", "Trade Union and Communist Party", 0],
+      ["Modern History", "Development of Education in Modern India", 0],
+      ["Modern History", "Modern History : Miscellaneous", 0],
+      ["Modern History", "Constitutional Development of India", 0],
+      ["Modern History", "Regional States: Punjab and Mysore", 0],
+      ["Modern History", "Rowlatt Act and Jallianwala Bagh Massacre (1919)", 0],
+      ["Modern History", "Magazines, Books And Their Authors", 0],
+      ["Modern History", "Advent of European Companies", 0],
+      ["Modern History", "Civil Disobedience Movement", 0],
+      ["Modern History", "Moderates and Extremists in Congress", 0],
+      ["Modern History", "Cabinet Mission Plan (1946)", 0],
+      ["Modern History", "Revolt of 1857", 0],
+      ["Modern History", "Economic Impact of British Rule on India", 0],
+      ["Modern History", "Indian National Congress", 0],
+      ["Modern History", "Quit India Movement", 0],
+      ["Modern History", "Gandhi and His Early Movement", 0],
+      ["Modern History", "Political Organisation Established before Congress", 0],
+      ["Modern History", "Subhash Chandra Bose and Azad Hind Fauj", 0],
+      ["Modern History", "Delhi Durbar and Change of Capital", 0],
+      ["Modern History", "Partition of India and Independence", 0],
+      ["Modern History", "Congress Socialist Party (1934)", 0],
+      ["Modern History", "Second World War", 0],
+      ["Modern History", "Formation of Interim Government (1946)", 0],
+      ["Modern History", "Partition of Bengal and Swadeshi Movement", 0],
+      ["World Geography", "Economic Geography", 0],
+      ["World Geography", "Arid Region/ Desert", 0],
+      ["World Geography", "The Major tribes of the world", 0],
+      ["World Geography", "Hydrosphere", 0],
+      ["World Geography", "The Grasslands", 1],
+      ["World Geography", "The World Mountain Ranges", 0],
+      ["World Geography", "Ocean Currents", 0],
+      ["World Geography", "Canals", 0],
+      ["World Geography", "World Climate", 0],
+      ["World Geography", "Capital cities of the world", 0],
+      ["World Geography", "The Island", 0],
+      ["World Geography", "Rivers of the World", 0],
+      ["World Geography", "Countries and their Borders", 0],
+      ["World Geography", "The Forest", 0],
+      ["World Geography", "Winds", 0],
+      ["World Geography", "The Insolation", 0],
+      ["World Geography", "Towns and Cities along the Banks of Rivers", 0],
+      ["World Geography", "Humidity", 0],
+      ["World Geography", "Local Winds", 0],
+      ["World Geography", "The Ports and Harbours", 1],
+      ["World Geography", "Lakes and Water Falls", 0],
+      ["World Geography", "Transport", 0],
+      ["World Geography", "Earth", 0],
+      ["World Geography", "The Atmosphere", 0],
+      ["World Geography", "The Land-locked Countries", 0],
+      ["World Geography", "World Towns", 0],
+      ["Indian Geography", "Physical Division", 0],
+      ["Indian Geography", "Drainage System", 0],
+      ["Indian Geography", "Mineral Resources", 0],
+      ["Indian Geography", "Climate", 0],
+      ["Indian Geography", "States and Union territories of India", 0],
+      ["Indian Geography", "Industry", 0],
+      ["Indian Geography", "Miscellaneous", 0],
+      ["Indian Geography", "Transport", 0],
+      ["Indian Geography", "Electrical Energy", 0],
+      ["Indian Geography", "Multi-Purpose River Valley Project", 0],
+      ["Indian Geography", "Soils", 0],
+      ["Indian Geography", "Natural Vegetation", 0],
+      ["Indian Geography", "Indian Geography", 0],
+      ["Indian Geography", "Cash Crops", 0],
+      ["Indian Geography", "Species/Tribes", 0],
+      ["Indian Geography", "Plantation Crops", 0],
+      ["Ancient History", "Post-Mauryan Period", 0],
+      ["Ancient History", "Gupta and Post-Gupta Period", 0],
+      ["Ancient History", "Maurya Empire", 0],
+      ["Ancient History", "South India (Chola, Chalukya, Pallava and Sangam Period)", 0],
+      ["Ancient History", "Stone Age", 0],
+      ["Ancient History", "Vedic Age", 0],
+      ["Ancient History", "Early-Medieval Period", 0],
+      ["Ancient History", "Indus Valley Civilization", 0],
+      ["Medieval History", "Mughal Administration", 0],
+      ["Medieval History", "Mughal Period : Miscellaneous", 0],
+      ["Medieval History", "Maratha State and Confederacy", 0],
+      ["Medieval History", "Khalji Dynasty", 0],
+      ["Medieval History", "Akbar", 0],
+      ["Medieval History", "Delhi Sultanate: Administration", 0],
+      ["Medieval History", "Bhakti and Sufi Movement", 0],
+      ["Medieval History", "Delhi Sultanate: Slave Dynasty", 0],
+      ["Medieval History", "Provincial Dynasty of North India and Deccan Province", 0],
+      ["Medieval History", "Mughal Literature", 0],
+      ["Medieval History", "Jahangir", 0],
+      ["Medieval History", "Muslim Invasion of India", 0],
+      ["Medieval History", "Aurangzeb", 0],
+      ["Chemistry", "Organic Chemistry", 0],
+      ["Chemistry", "Non-metals", 0],
+      ["Chemistry", "Metals, Minerals, Ores: Properties, Uses", 0],
+      ["Chemistry", "Food preservation, Nutrition, Medicine, etc.", 0],
+      ["Chemistry", "Physical and Chemical Changes, Solution", 0],
+      ["Chemistry", "Atomic Structure", 0],
+      ["Environment & Ecology", "Environment and Sustainable Development", 0],
+      ["Environment & Ecology", "Pollution", 0],
+      ["Environment & Ecology", "Ecology", 0],
+      ["Environment & Ecology", "Greenhouse Effect and Climate Change", 0],
+      ["Environment & Ecology", "Biodiversity", 0],
+      ["Environment & Ecology", "Forest and Wildlife", 0],
+      ["Environment & Ecology", "NATIONAL PARKS", 0],
+      ["Environment & Ecology", "RAMSAR SITES", 0]
+    ];
+
     function inferPillar(subjectName) {
+      if (UPSC_PILLARS[subjectName]) return UPSC_PILLARS[subjectName];
       const s = (subjectName || '').toLowerCase();
-      if (/polity|constitution|governance|law|parliament|judiciary|ir|international/.test(s)) return 'Polity, Governance & IR';
-      if (/econom|budget|fiscal|finance|banking|social dev|agriculture|demography/.test(s)) return 'Economy & Social Development';
-      if (/history|culture|art|ancient|medieval|modern|heritage|freedom/.test(s)) return 'History, Art & Culture';
+      if (/polity|constitution|governance|law|parliament|judiciary|ir|international/.test(s)) return 'Polity & Economy';
+      if (/econom|budget|fiscal|finance|banking|social dev|agriculture|demography/.test(s)) return 'Polity & Economy';
+      if (/history|culture|art|ancient|medieval|modern|heritage/.test(s)) return 'History & Culture';
       if (/geograph|environment|ecology|climate|biodiversity|disaster|mapping/.test(s)) return 'Geography & Environment';
-      if (/physic|chemist|biolog|science|tech|space|it|computer/.test(s)) return 'Science & Technology';
-      if (/ethic|integrity|aptitude|case stud/.test(s)) return 'Ethics & Integrity';
-      if (/math|quant|reason|csat|english|comprehension|aptitude/.test(s)) return 'CSAT & Quantitative Aptitude';
+      if (/physic|chemist|biolog|science|tech|space|it|computer/.test(s)) return 'General Science';
       return 'Core Syllabus Modules';
     }
 
@@ -563,16 +843,40 @@
       return new Date().toISOString().slice(0, 10);
     }
 
-    // Blank slate initial state for every new user
     function buildBlankState() {
       return {
         mode: 'general',
         globalCurve: 'standard',
         subjectCurves: {},
-        subjects: [], // Ordered list of subject names (supports empty subjects too)
+        subjects: [],
         pillars: {},
         templates: JSON.parse(JSON.stringify(DEFAULT_TEMPLATES)),
         chapters: [],
+        updatedAt: Date.now()
+      };
+    }
+
+    function buildUPSCPresetState() {
+      const today = todayISO();
+      const subjects = [...new Set(RAW_UPSC_148.map(r => r[0]))];
+      const chapters = RAW_UPSC_148.map((item, i) => ({
+        id: 'ch_' + (i + 1),
+        subject: item[0],
+        title: item[1],
+        readings: item[2],
+        confidence: item[2] > 0 ? 3 : 0,
+        priority: (item[0] === 'Indian Polity' || item[0] === 'Modern History' || item[0] === 'Economy & Social Dev') ? 'High' : 'Moderate',
+        lastRead: item[2] > 0 ? today : null,
+        nextDue: item[2] > 0 ? addDays(today, 1) : null
+      }));
+      return {
+        mode: 'general',
+        globalCurve: 'standard',
+        subjectCurves: {},
+        subjects,
+        pillars: { ...UPSC_PILLARS },
+        templates: JSON.parse(JSON.stringify(DEFAULT_TEMPLATES)),
+        chapters,
         updatedAt: Date.now()
       };
     }
@@ -604,6 +908,8 @@
         if (!pillars[subject]) pillars[subject] = inferPillar(subject);
         const title = (c.title || c.name || ('Chapter ' + (idx + 1))).trim();
         const readings = Number(c.readings ?? (Array.isArray(c.history) ? c.history.length : 0)) || 0;
+        const confidence = Math.min(5, Math.max(0, Number(c.confidence) || 0));
+        const priority = ['Critical', 'High', 'Moderate'].includes(c.priority) ? c.priority : 'Moderate';
         const lastRead = readings > 0 ? (c.lastRead || today) : null;
         let nextDue = null;
         if (readings > 0) {
@@ -621,6 +927,8 @@
           subject,
           title,
           readings,
+          confidence,
+          priority,
           lastRead,
           nextDue
         };
@@ -651,7 +959,8 @@
       return buildBlankState();
     })();
 
-    let expandedSubjects = new Set();
+    let activeSubjectModal = null;
+    let transferringChapterId = null;
     let cloudSaveHook = null;
     let pendingImportRows = [];
 
@@ -662,6 +971,7 @@
       } catch (e) {}
       if (typeof cloudSaveHook === 'function') cloudSaveHook(state);
       renderAll();
+      if (activeSubjectModal) renderSubjectWorkspace(activeSubjectModal);
     }
 
     function getCurveForSubject(subject) {
@@ -689,14 +999,109 @@
       saveState();
     }
 
+    function cyclePriority(chId) {
+      const ch = state.chapters.find(c => c.id === chId);
+      if (!ch) return;
+      const order = ['Moderate', 'High', 'Critical'];
+      const next = order[(order.indexOf(ch.priority || 'Moderate') + 1) % order.length];
+      ch.priority = next;
+      saveState();
+    }
+
+    function setConfidence(chId, stars) {
+      const ch = state.chapters.find(c => c.id === chId);
+      if (!ch) return;
+      ch.confidence = ch.confidence === stars ? 0 : stars;
+      saveState();
+    }
+
+    function openSubjectWorkspace(subj) {
+      activeSubjectModal = subj;
+      document.getElementById('wsChapterSearch').value = '';
+      renderSubjectWorkspace(subj);
+      document.getElementById('modalSubjectWorkspace').classList.add('open');
+    }
+
+    function renderSubjectWorkspace(subj) {
+      if (!state.subjects.includes(subj)) {
+        activeSubjectModal = null;
+        document.getElementById('modalSubjectWorkspace').classList.remove('open');
+        return;
+      }
+
+      const allCh = state.chapters.filter(c => c.subject === subj);
+      const doneCount = allCh.filter(c => c.readings > 0).length;
+      const rated = allCh.filter(c => c.confidence > 0);
+      const avgConf = rated.length ? (rated.reduce((s, c) => s + c.confidence, 0) / rated.length).toFixed(1) : '0.0';
+
+      document.getElementById('wsSubjectTitle').textContent = subj;
+      document.getElementById('wsSubjectPillar').textContent = state.pillars[subj] || inferPillar(subj);
+      document.getElementById('wsSubjectStats').textContent = `${doneCount}/${allCh.length} chapters initiated • Avg Confidence: ${avgConf} ★`;
+
+      const curveWrap = document.getElementById('wsSubjectCurveWrap');
+      if (state.mode === 'subject') {
+        const subjCurveKey = state.subjectCurves[subj] || state.globalCurve;
+        curveWrap.innerHTML = `<select class="curve-select" data-subj-curve="${subj}">
+          ${Object.entries(state.templates).map(([k, v]) => `<option value="${k}" ${k === subjCurveKey ? 'selected' : ''}>${v.name.split(' (')[0]}</option>`).join('')}
+        </select>`;
+      } else {
+        curveWrap.innerHTML = '';
+      }
+
+      const q = document.getElementById('wsChapterSearch').value.trim().toLowerCase();
+      const prioFilter = document.getElementById('priorityFilter').value;
+      const filtered = allCh.filter(c => {
+        if (q && !c.title.toLowerCase().includes(q)) return false;
+        if (prioFilter !== 'all' && (c.priority || 'Moderate') !== prioFilter) return false;
+        return true;
+      });
+
+      const listEl = document.getElementById('wsChaptersList');
+      if (!filtered.length) {
+        listEl.innerHTML = `<div class="kpi-sub" style="padding:14px 0">No matching chapters in ${subj}. Add one below!</div>`;
+        return;
+      }
+
+      listEl.innerHTML = filtered.map(ch => {
+        const prio = ch.priority || 'Moderate';
+        const prioClass = prio === 'Critical' ? 'prio-critical' : (prio === 'High' ? 'prio-high' : 'prio-moderate');
+        const starsHtml = Array.from({ length: 5 }, (_, sIdx) => {
+          const val = sIdx + 1;
+          return `<button class="star-btn ${val <= (ch.confidence || 0) ? 'active' : ''}" data-star-ch="${ch.id}" data-star-val="${val}" title="Confidence ${val}/5">★</button>`;
+        }).join('');
+
+        return `<div class="chapter-row">
+          <div class="ch-left">
+            <div class="ch-title-line">
+              <span class="ch-title">${ch.title}</span>
+              <button class="prio-btn ${prioClass}" data-prio-ch="${ch.id}" title="Click to cycle priority">${prio}</button>
+              <span class="stars-wrap" title="Rate recall confidence">${starsHtml}</span>
+            </div>
+            <div class="ch-sub">${ch.readings > 0 ? `Pass ${ch.readings}/9 • Last: ${ch.lastRead} • Next review: ${ch.nextDue}` : 'Not started yet'}</div>
+          </div>
+          <div class="ch-controls">
+            <div class="pills">
+              ${Array.from({ length: 9 }, (_, i) => `
+                <button class="r-pill ${i < ch.readings ? 'done' : ''}" data-ch="${ch.id}" data-step="${i}">R${i + 1}</button>
+              `).join('')}
+            </div>
+            <button class="btn btn-sm" data-transfer-ch="${ch.id}" title="Move chapter to another subject">⇄ Move</button>
+            <button class="btn btn-danger" data-del-ch="${ch.id}" title="Delete Chapter">✕</button>
+          </div>
+        </div>`;
+      }).join('');
+    }
+
     function renderAll() {
       const today = todayISO();
       const totalChapters = state.chapters.length;
       const totalMaxPasses = totalChapters * 9;
-      let started = 0, passes = 0, dueCount = 0;
+      let started = 0, passes = 0, dueCount = 0, criticalCount = 0, confSum = 0, confCount = 0;
       const scheduled = [];
 
       state.chapters.forEach(ch => {
+        if ((ch.priority || 'Moderate') === 'Critical') criticalCount++;
+        if (ch.confidence > 0) { confSum += ch.confidence; confCount++; }
         if (ch.readings > 0) {
           started++;
           passes += ch.readings;
@@ -715,7 +1120,7 @@
       document.getElementById('ringPct').textContent = `${masteryPct}%`;
       document.getElementById('ringSub').textContent = totalChapters > 0
         ? `${passes} of ${totalMaxPasses} total recall passes`
-        : 'Blank slate — add or import chapters';
+        : 'Click "Load My 148 UPSC Syllabus" or import Excel';
 
       // Executive KPIs
       const uniquePillars = new Set(state.subjects.map(s => state.pillars[s] || inferPillar(s)));
@@ -723,12 +1128,12 @@
       document.getElementById('kpiStarted').innerHTML = `<span>${started}</span> / ${totalChapters}`;
       document.getElementById('kpiStartedPct').textContent = totalChapters
         ? `${((started / totalChapters) * 100).toFixed(1)}% first reading logged`
-        : 'No chapters added yet';
+        : 'No chapters loaded yet';
       document.getElementById('kpiPasses').innerHTML = `<span>${passes}</span> / ${totalMaxPasses.toLocaleString()}`;
       document.getElementById('kpiDue').innerHTML = `<span>${dueCount}</span>`;
-      document.getElementById('kpiMode').innerHTML = state.mode === 'general'
-        ? `<span>General</span> Revise`
-        : `<span>Subject</span> Specific`;
+      document.getElementById('kpiCriticalCount').textContent = `${criticalCount} Critical priority chapters`;
+      const avgConf = confCount ? (confSum / confCount).toFixed(1) : '0.0';
+      document.getElementById('kpiConfidence').innerHTML = `<span>${avgConf}</span> / 5 ★`;
 
       const activeTpl = state.templates[state.globalCurve] || Object.values(state.templates)[0];
       document.getElementById('kpiCurveLabel').textContent = activeTpl ? activeTpl.name : 'Standard Spaced Curve';
@@ -746,7 +1151,7 @@
       document.getElementById('queueCount').textContent = `${scheduled.length} scheduled`;
       const qList = document.getElementById('queueList');
       if (!scheduled.length) {
-        qList.innerHTML = `<div class="kpi-sub">${totalChapters ? 'Tap R1 on any chapter below to schedule its first spaced review.' : 'Import an Excel sheet or add subjects to populate your queue.'}</div>`;
+        qList.innerHTML = `<div class="kpi-sub">${totalChapters ? 'Open any subject tile below and click R1 to start scheduling.' : 'Load your 148 UPSC chapters or import an Excel file to start.'}</div>`;
       } else {
         qList.innerHTML = scheduled.slice(0, 15).map(ch => {
           const isDue = ch.nextDue <= today;
@@ -766,7 +1171,7 @@
       // Subject Mastery Breakdown
       const bdList = document.getElementById('subjectBreakdown');
       if (!state.subjects.length) {
-        bdList.innerHTML = `<div class="kpi-sub">Subject progress bars will appear once subjects are created or imported.</div>`;
+        bdList.innerHTML = `<div class="kpi-sub">Subject progress bars will appear once subjects are loaded.</div>`;
       } else {
         bdList.innerHTML = state.subjects.map(subj => {
           const chs = state.chapters.filter(c => c.subject === subj);
@@ -796,17 +1201,19 @@
         </div>`;
       }).join('');
 
-      // Categorized Pillar -> Subject -> Chapter Hierarchy
+      // Subject Tiles Grouped by Pillar
       const query = document.getElementById('searchInput').value.trim().toLowerCase();
+      const prioFilter = document.getElementById('priorityFilter').value;
       const container = document.getElementById('syllabusContainer');
 
       if (!state.subjects.length) {
         container.innerHTML = `
           <div class="empty-hero">
             <h2>Your Revision OS Workspace is Ready</h2>
-            <p>Start with a clean slate: import your Excel/CSV syllabus (Column A: Subject Name, Column B: Chapter Name) for automatic pillar categorization, or add subjects manually.</p>
+            <p>Start with a clean slate for new users, import any 2-column Excel/CSV syllabus, or load your pre-categorized 148-chapter UPSC syllabus in one click.</p>
             <div class="empty-actions">
-              <button class="btn btn-accent" onclick="document.getElementById('btnImportExcel').click()">Import Excel / CSV</button>
+              <button class="btn btn-accent" onclick="document.getElementById('btnLoadUPSC').click()">Load My 148 UPSC Syllabus</button>
+              <button class="btn" onclick="document.getElementById('btnImportExcel').click()">Import Excel / CSV</button>
               <button class="btn" onclick="document.getElementById('btnManageSyllabus').click()">+ Add Subject Manually</button>
             </div>
           </div>
@@ -814,7 +1221,6 @@
         return;
       }
 
-      // Group subjects by Pillar
       const pillarGroups = {};
       state.subjects.forEach(subj => {
         const p = state.pillars[subj] || inferPillar(subj);
@@ -823,84 +1229,90 @@
       });
 
       container.innerHTML = Object.entries(pillarGroups).map(([pillarName, subjList]) => {
-        const renderedSubjects = subjList.map(subj => {
+        const tilesHtml = subjList.map(subj => {
           const allCh = state.chapters.filter(c => c.subject === subj);
-          const filtered = query
-            ? allCh.filter(c => c.title.toLowerCase().includes(query) || subj.toLowerCase().includes(query) || pillarName.toLowerCase().includes(query))
-            : allCh;
-          if (query && !filtered.length && !subj.toLowerCase().includes(query)) return '';
+          const matchingCh = allCh.filter(c => {
+            if (prioFilter !== 'all' && (c.priority || 'Moderate') !== prioFilter) return false;
+            if (query && !c.title.toLowerCase().includes(query) && !subj.toLowerCase().includes(query) && !pillarName.toLowerCase().includes(query)) return false;
+            return true;
+          });
+
+          if ((query || prioFilter !== 'all') && !matchingCh.length && !subj.toLowerCase().includes(query)) return '';
 
           const doneCount = allCh.filter(c => c.readings > 0).length;
           const pct = allCh.length ? Math.round((doneCount / allCh.length) * 100) : 0;
-          const isOpen = query ? true : expandedSubjects.has(subj);
-          const subjCurveKey = state.subjectCurves[subj] || state.globalCurve;
+          const critInSubj = allCh.filter(c => c.priority === 'Critical').length;
+          const rated = allCh.filter(c => c.confidence > 0);
+          const avgStar = rated.length ? (rated.reduce((s, c) => s + c.confidence, 0) / rated.length).toFixed(1) : '—';
 
-          const curveDropdown = state.mode === 'subject'
-            ? `<select class="curve-select" style="min-width:145px" data-subj-curve="${subj}">
-                ${Object.entries(state.templates).map(([k, v]) => `<option value="${k}" ${k === subjCurveKey ? 'selected' : ''}>${v.name.split(' (')[0]}</option>`).join('')}
-              </select>`
-            : '';
-
-          const chaptersHtml = isOpen
-            ? `<div class="chapter-list">
-                ${filtered.length === 0 ? `<div class="kpi-sub" style="padding:8px 0">No chapters in this subject yet. Add one below:</div>` : ''}
-                ${filtered.map(ch => `
-                  <div class="chapter-row">
-                    <div>
-                      <div class="ch-title">${ch.title}</div>
-                      <div class="ch-sub">${ch.readings > 0 ? `Pass ${ch.readings}/9 • Last: ${ch.lastRead} • Next review: ${ch.nextDue}` : 'Not started yet'}</div>
-                    </div>
-                    <div class="pills">
-                      ${Array.from({ length: 9 }, (_, i) => `
-                        <button class="r-pill ${i < ch.readings ? 'done' : ''}" data-ch="${ch.id}" data-step="${i}">R${i + 1}</button>
-                      `).join('')}
-                      <button class="btn btn-danger" data-del-ch="${ch.id}" title="Delete Chapter">✕</button>
-                    </div>
-                  </div>
-                `).join('')}
-                <div class="inline-add">
-                  <input type="text" class="text-input" style="flex:1" placeholder="Add new chapter to ${subj}..." data-quick-input="${subj}" />
-                  <button class="btn btn-accent btn-sm" data-quick-add="${subj}">+ Add Chapter</button>
-                </div>
-              </div>`
-            : '';
-
-          return `<div class="subject-card">
-            <div class="subject-head" data-toggle-subj="${subj}">
-              <div class="subj-meta">
-                <span class="chev">${isOpen ? '▼' : '▶'}</span>
-                <span class="subj-name">${subj}</span>
-                <span class="count-chip">${allCh.length} chapters</span>
+          return `<div class="subject-tile" data-open-tile="${subj}">
+            <div>
+              <div class="tile-top">
+                <div class="tile-title">${subj}</div>
+                ${critInSubj > 0 ? `<span class="prio-btn prio-critical">${critInSubj} Critical</span>` : ''}
               </div>
-              <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-                ${curveDropdown}
-                <div class="prog-wrap">
-                  <div class="prog-track"><div class="prog-fill" style="width:${pct}%"></div></div>
-                  <span class="kpi-sub">${doneCount}/${allCh.length}</span>
-                </div>
-                <button class="btn btn-danger" data-del-subj="${subj}" title="Delete Subject">Delete</button>
-              </div>
+              <div class="kpi-sub" style="margin-top:4px">${allCh.length} chapters • Avg ★ ${avgStar}</div>
             </div>
-            ${chaptersHtml}
+
+            <div>
+              <div class="tile-stats">
+                <span>Mastery Progress</span>
+                <span><strong>${doneCount}/${allCh.length}</strong> (${pct}%)</span>
+              </div>
+              <div class="prog-track"><div class="prog-fill" style="width:${pct}%"></div></div>
+            </div>
+
+            <div class="tile-footer">
+              <span>${state.mode === 'subject' ? (state.templates[state.subjectCurves[subj] || state.globalCurve]?.name.split(' (')[0] || 'Custom Curve') : 'General Cycle'}</span>
+              <span class="open-chip">Open Chapters →</span>
+            </div>
           </div>`;
         }).join('');
 
-        if (!renderedSubjects.trim()) return '';
+        if (!tilesHtml.trim()) return '';
         return `<section class="pillar-section">
           <div class="pillar-header">
             <span class="pillar-title">${pillarName}</span>
-            <span class="kpi-sub">${subjList.length} Subject${subjList.length > 1 ? 's' : ''}</span>
+            <span class="kpi-sub">${subjList.length} Subject Tiles</span>
           </div>
-          ${renderedSubjects}
+          <div class="subject-tile-grid">${tilesHtml}</div>
         </section>`;
       }).join('');
     }
 
     // Event Delegation
     document.body.addEventListener('click', e => {
+      const tile = e.target.closest('[data-open-tile]');
+      if (tile) {
+        openSubjectWorkspace(tile.dataset.openTile);
+        return;
+      }
       const pill = e.target.closest('[data-ch][data-step]');
       if (pill) {
         toggleReading(pill.dataset.ch, Number(pill.dataset.step));
+        return;
+      }
+      const prioBtn = e.target.closest('[data-prio-ch]');
+      if (prioBtn) {
+        cyclePriority(prioBtn.dataset.prioCh);
+        return;
+      }
+      const starBtn = e.target.closest('[data-star-ch]');
+      if (starBtn) {
+        setConfidence(starBtn.dataset.starCh, Number(starBtn.dataset.starVal));
+        return;
+      }
+      const transferBtn = e.target.closest('[data-transfer-ch]');
+      if (transferBtn) {
+        const ch = state.chapters.find(c => c.id === transferBtn.dataset.transferCh);
+        if (!ch) return;
+        transferringChapterId = ch.id;
+        document.getElementById('transferChapterLabel').textContent = `${ch.title} (currently in ${ch.subject})`;
+        const others = state.subjects.filter(s => s !== ch.subject);
+        document.getElementById('transferTargetSubject').innerHTML = others.length
+          ? others.map(s => `<option value="${s}">${s} (${state.pillars[s] || inferPillar(s)})</option>`).join('')
+          : `<option value="">No other subjects available — create one first</option>`;
+        document.getElementById('modalTransfer').classList.add('open');
         return;
       }
       const delCh = e.target.closest('[data-del-ch]');
@@ -912,48 +1324,11 @@
         }
         return;
       }
-      const delSubj = e.target.closest('[data-del-subj]');
-      if (delSubj) {
-        const s = delSubj.dataset.delSubj;
-        if (confirm(`Delete subject "${s}" and all its chapters?`)) {
-          state.chapters = state.chapters.filter(c => c.subject !== s);
-          state.subjects = state.subjects.filter(sub => sub !== s);
-          delete state.subjectCurves[s];
-          delete state.pillars[s];
-          expandedSubjects.delete(s);
-          saveState();
-        }
-        return;
-      }
-      const quickAdd = e.target.closest('[data-quick-add]');
-      if (quickAdd) {
-        const subj = quickAdd.dataset.quickAdd;
-        const inp = document.querySelector(`[data-quick-input="${CSS.escape(subj)}"]`);
-        const title = inp ? inp.value.trim() : '';
-        if (title) {
-          state.chapters.push({
-            id: 'ch_' + Date.now() + '_' + Math.random().toString(36).slice(2, 5),
-            subject: subj,
-            title,
-            readings: 0,
-            lastRead: null,
-            nextDue: null
-          });
-          saveState();
-        }
-        return;
-      }
-      const head = e.target.closest('[data-toggle-subj]');
-      if (head && !e.target.closest('select') && !e.target.closest('button')) {
-        const s = head.dataset.toggleSubj;
-        if (expandedSubjects.has(s)) expandedSubjects.delete(s);
-        else expandedSubjects.add(s);
-        renderAll();
-        return;
-      }
       const closeBtn = e.target.closest('[data-close]');
       if (closeBtn) {
-        document.getElementById(closeBtn.dataset.close).classList.remove('open');
+        const targetId = closeBtn.dataset.close;
+        if (targetId === 'modalSubjectWorkspace') activeSubjectModal = null;
+        document.getElementById(targetId).classList.remove('open');
       }
     });
 
@@ -964,23 +1339,88 @@
       }
     });
 
+    // Confirm Transfer Chapter
+    document.getElementById('btnConfirmTransfer').onclick = () => {
+      const targetSubj = document.getElementById('transferTargetSubject').value;
+      if (!transferringChapterId || !targetSubj) return;
+      const ch = state.chapters.find(c => c.id === transferringChapterId);
+      if (ch) {
+        ch.subject = targetSubj;
+        saveState();
+      }
+      transferringChapterId = null;
+      document.getElementById('modalTransfer').classList.remove('open');
+    };
+
+    // Workspace inline chapter add & delete subject
+    document.getElementById('wsChapterSearch').oninput = () => {
+      if (activeSubjectModal) renderSubjectWorkspace(activeSubjectModal);
+    };
+
+    document.getElementById('wsAddChapterBtn').onclick = () => {
+      if (!activeSubjectModal) return;
+      const title = document.getElementById('wsNewChapterTitle').value.trim();
+      const prio = document.getElementById('wsNewChapterPrio').value;
+      if (!title) return;
+      state.chapters.push({
+        id: 'ch_' + Date.now() + '_' + Math.random().toString(36).slice(2, 5),
+        subject: activeSubjectModal,
+        title,
+        readings: 0,
+        confidence: 0,
+        priority: prio,
+        lastRead: null,
+        nextDue: null
+      });
+      document.getElementById('wsNewChapterTitle').value = '';
+      saveState();
+    };
+
+    document.getElementById('wsDeleteSubject').onclick = () => {
+      if (!activeSubjectModal) return;
+      const s = activeSubjectModal;
+      if (confirm(`Delete subject "${s}" and all its chapters?`)) {
+        state.chapters = state.chapters.filter(c => c.subject !== s);
+        state.subjects = state.subjects.filter(sub => sub !== s);
+        delete state.subjectCurves[s];
+        delete state.pillars[s];
+        activeSubjectModal = null;
+        document.getElementById('modalSubjectWorkspace').classList.remove('open');
+        saveState();
+      }
+    };
+
     document.getElementById('modeGeneral').onclick = () => { state.mode = 'general'; saveState(); };
     document.getElementById('modeSubject').onclick = () => { state.mode = 'subject'; saveState(); };
     document.getElementById('globalCurveSelect').onchange = e => { state.globalCurve = e.target.value; saveState(); };
+    document.getElementById('priorityFilter').onchange = () => renderAll();
     document.getElementById('searchInput').oninput = () => renderAll();
-    document.getElementById('btnExpandAll').onclick = () => { state.subjects.forEach(s => expandedSubjects.add(s)); renderAll(); };
-    document.getElementById('btnCollapseAll').onclick = () => { expandedSubjects.clear(); renderAll(); };
+
+    // Load 148 UPSC Syllabus Preset
+    document.getElementById('btnLoadUPSC').onclick = () => {
+      if (state.chapters.length > 0 && !confirm('Merge/Load the 148-chapter UPSC categorized syllabus into your workspace?')) return;
+      const preset = buildUPSCPresetState();
+      preset.subjects.forEach(s => {
+        if (!state.subjects.includes(s)) state.subjects.push(s);
+        state.pillars[s] = preset.pillars[s];
+      });
+      preset.chapters.forEach(ch => {
+        const exists = state.chapters.some(c => c.subject === ch.subject && c.title === ch.title);
+        if (!exists) state.chapters.push(ch);
+      });
+      saveState();
+    };
 
     // Reset to Blank Slate
     document.getElementById('btnResetBlank').onclick = () => {
       if (confirm('Reset your workspace to a completely blank slate? All subjects and chapters will be cleared.')) {
         state = buildBlankState();
-        expandedSubjects.clear();
+        activeSubjectModal = null;
         saveState();
       }
     };
 
-    // Excel / CSV Importer (Cell 1 = Subject Name, Cell 2 = Chapter Name)
+    // Excel / CSV Importer
     const dropzone = document.getElementById('excelDropzone');
     const fileInput = document.getElementById('excelFileInput');
 
@@ -1033,7 +1473,6 @@
           const subj = String(r[0] || '').trim();
           const chap = String(r[1] || '').trim();
           if (!subj || !chap) return;
-          // Skip header row if detected
           if (idx === 0 && /^(subject|paper|module)/i.test(subj) && /^(chapter|topic|title)/i.test(chap)) return;
           cleaned.push({ subject: subj, title: chap, pillar: inferPillar(subj) });
         });
@@ -1063,7 +1502,6 @@
         if (!state.subjects.includes(row.subject)) {
           state.subjects.push(row.subject);
           state.pillars[row.subject] = row.pillar;
-          expandedSubjects.add(row.subject);
         }
         const exists = state.chapters.some(c => c.subject.toLowerCase() === row.subject.toLowerCase() && c.title.toLowerCase() === row.title.toLowerCase());
         if (!exists) {
@@ -1072,6 +1510,8 @@
             subject: row.subject,
             title: row.title,
             readings: 0,
+            confidence: 0,
+            priority: 'Moderate',
             lastRead: null,
             nextDue: null
           });
@@ -1114,11 +1554,8 @@
       const name = document.getElementById('newSubjectName').value.trim();
       const customPillar = document.getElementById('newSubjectPillar').value.trim();
       if (!name) return;
-      if (!state.subjects.includes(name)) {
-        state.subjects.push(name);
-      }
+      if (!state.subjects.includes(name)) state.subjects.push(name);
       state.pillars[name] = customPillar || inferPillar(name);
-      expandedSubjects.add(name);
       document.getElementById('newSubjectName').value = '';
       document.getElementById('newSubjectPillar').value = '';
       refreshSubjectDropdown();
@@ -1134,10 +1571,11 @@
         subject: subj,
         title,
         readings: 0,
+        confidence: 0,
+        priority: 'Moderate',
         lastRead: null,
         nextDue: null
       });
-      expandedSubjects.add(subj);
       document.getElementById('newChapterName').value = '';
       saveState();
       document.getElementById('modalSyllabus').classList.remove('open');
@@ -1188,13 +1626,13 @@
     // Mind Map Modal
     document.getElementById('btnMindMap').onclick = () => {
       if (!state.subjects.length) {
-        document.getElementById('mindMapGrid').innerHTML = `<div class="kpi-sub">Add or import subjects to visualize your syllabus mind map.</div>`;
+        document.getElementById('mindMapGrid').innerHTML = `<div class="kpi-sub">Add or load subjects to visualize your syllabus mind map.</div>`;
       } else {
         document.getElementById('mindMapGrid').innerHTML = state.subjects.map(s => {
           const chs = state.chapters.filter(c => c.subject === s);
           const started = chs.filter(c => c.readings > 0).length;
           return `<div class="mm-node ${started > 0 ? 'active' : ''}">
-            <div class="count-chip" style="display:inline-block;margin-bottom:6px">${state.pillars[s] || inferPillar(s)}</div>
+            <div class="badge" style="display:inline-block;margin-bottom:6px">${state.pillars[s] || inferPillar(s)}</div>
             <div style="font-weight:700;font-size:0.95rem">${s}</div>
             <div class="kpi-sub" style="margin-top:4px">${started} / ${chs.length} chapters initiated</div>
             <div class="mm-link">${chs.slice(0, 3).map(c => c.title).join(' • ') || 'No chapters yet'}</div>
@@ -1222,6 +1660,15 @@
           localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
           renderAll();
         }
+      },
+      loadOwnerUPSCIfEmpty: () => {
+        if (!state.chapters || state.chapters.length === 0) {
+          state = buildUPSCPresetState();
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+          renderAll();
+          return true;
+        }
+        return false;
       },
       resetToBlank: () => {
         state = buildBlankState();
@@ -1276,16 +1723,20 @@
       }
     }
 
-    async function pullFromCloud(uid) {
+    async function pullFromCloud(user) {
       try {
-        const ref = doc(db, 'artifacts', 'reviseos', 'users', uid, 'state', 'main');
+        const ref = doc(db, 'artifacts', 'reviseos', 'users', user.uid, 'state', 'main');
         const snap = await getDoc(ref);
-        if (snap.exists()) {
+        if (snap.exists() && Array.isArray(snap.data().chapters) && snap.data().chapters.length > 0) {
           window.__reviseOS.applyRemoteState(snap.data());
+        } else if ((user.email || '').toLowerCase() === 'shivamvyadav999@gmail.com') {
+          // Automatically seed your categorized 148-chapter UPSC syllabus for your account
+          window.__reviseOS.loadOwnerUPSCIfEmpty();
+          await pushToCloud(user.uid, window.__reviseOS.getState());
         } else {
-          // Brand new Google user starts with their own isolated blank slate
+          // Any other user (like your sister) starts with an isolated blank slate
           window.__reviseOS.resetToBlank();
-          await pushToCloud(uid, window.__reviseOS.getState());
+          await pushToCloud(user.uid, window.__reviseOS.getState());
         }
         setStatus('online', 'Synced to Cloud');
       } catch (err) {
@@ -1308,7 +1759,7 @@
           window.__reviseOS.resetToBlank();
         };
         window.__reviseOS.setCloudHook(data => pushToCloud(user.uid, data));
-        await pullFromCloud(user.uid);
+        await pullFromCloud(user);
       } else {
         window.__reviseOS.setCloudHook(null);
         setStatus('', 'Local Storage');
