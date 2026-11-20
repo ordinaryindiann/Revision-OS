@@ -22,6 +22,7 @@
       --ros-border: #2A303C;
       --ros-accent: var(--ros-lime);
       --ros-accent-text: #0F1117;
+      --ros-danger: #EF4444;
 
       --ros-font: Inter, Manrope, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       --ros-radius-sm: 8px;
@@ -38,6 +39,7 @@
       --ros-border: #D8DAD3;
       --ros-accent: #577A20;
       --ros-accent-text: #FFFFFF;
+      --ros-danger: #DC2626;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -70,17 +72,16 @@
     .actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
     .btn {
       display: inline-flex; align-items: center; gap: 6px;
-      padding: 8px 13px; font-size: 0.82rem; font-weight: 600;
+      padding: 8px 12px; font-size: 0.8rem; font-weight: 600;
       border-radius: var(--ros-radius-sm); border: 1px solid var(--ros-border);
       background: var(--ros-surface-raised); color: var(--ros-text);
       cursor: pointer; transition: all 0.15s ease;
     }
     .btn:hover { border-color: var(--ros-accent); }
-    .btn-accent {
-      background: var(--ros-accent); color: var(--ros-accent-text);
-      border-color: var(--ros-accent);
-    }
+    .btn-accent { background: var(--ros-accent); color: var(--ros-accent-text); border-color: var(--ros-accent); }
     .btn-accent:hover { opacity: 0.92; }
+    .btn-danger { color: var(--ros-danger); border-color: rgba(239,68,68,0.35); background: transparent; padding: 4px 8px; font-size: 0.72rem; }
+    .btn-danger:hover { background: rgba(239,68,68,0.12); border-color: var(--ros-danger); }
 
     .sync-pill {
       display: inline-flex; align-items: center; gap: 6px;
@@ -124,31 +125,31 @@
     }
     .mode-btn.active { background: var(--ros-accent); color: var(--ros-accent-text); }
 
-    .search-box {
-      flex: 1; min-width: 220px; max-width: 340px;
-      padding: 8px 12px; font-size: 0.85rem;
+    .search-box, .text-input {
+      padding: 8px 12px; font-size: 0.84rem;
       background: var(--ros-bg); color: var(--ros-text);
       border: 1px solid var(--ros-border); border-radius: var(--ros-radius-sm);
     }
-    .search-box:focus { outline: none; border-color: var(--ros-accent); }
+    .search-box { flex: 1; min-width: 200px; max-width: 320px; }
+    .search-box:focus, .text-input:focus { outline: none; border-color: var(--ros-accent); }
 
     /* Queue & Forecast */
     .two-col { display: grid; grid-template-columns: 1.3fr 1fr; gap: 14px; margin-bottom: 20px; }
     @media (max-width: 820px) { .two-col { grid-template-columns: 1fr; } }
     .section-title { font-size: 0.92rem; font-weight: 700; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; }
-    .queue-list { display: flex; flex-direction: column; gap: 8px; max-height: 220px; overflow-y: auto; }
+    .queue-list { display: flex; flex-direction: column; gap: 8px; max-height: 230px; overflow-y: auto; }
     .queue-item {
       display: flex; align-items: center; justify-content: space-between; gap: 10px;
       padding: 9px 12px; background: var(--ros-surface-raised);
       border: 1px solid var(--ros-border); border-radius: var(--ros-radius-sm); font-size: 0.83rem;
     }
     .badge {
-      padding: 2px 8px; border-radius: 999px; font-size: 0.72rem; font-weight: 700;
+      padding: 2px 8px; border-radius: 999px; font-size: 0.72rem; font-weight: 700; white-space: nowrap;
       background: rgba(198, 243, 107, 0.14); color: var(--ros-accent); border: 1px solid rgba(198, 243, 107, 0.3);
     }
     .badge.due { background: rgba(239, 68, 68, 0.16); color: #F87171; border-color: rgba(239, 68, 68, 0.35); }
 
-    .forecast-bars { display: flex; align-items: flex-end; gap: 8px; height: 140px; padding-top: 18px; }
+    .forecast-bars { display: flex; align-items: flex-end; gap: 8px; height: 150px; padding-top: 18px; }
     .f-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; height: 100%; justify-content: flex-end; }
     .f-bar { width: 100%; max-width: 34px; background: var(--ros-accent); border-radius: 6px 6px 2px 2px; min-height: 4px; transition: height 0.25s; }
     .f-lbl { font-size: 0.7rem; color: var(--ros-text-muted); font-weight: 600; }
@@ -163,10 +164,10 @@
       gap: 10px; padding: 14px 16px; cursor: pointer; user-select: none;
     }
     .subject-head:hover { background: var(--ros-surface-raised); }
-    .subj-meta { display: flex; align-items: center; gap: 10px; }
+    .subj-meta { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
     .subj-name { font-weight: 700; font-size: 0.96rem; }
     .pillar-tag { font-size: 0.7rem; padding: 2px 8px; border-radius: 6px; background: var(--ros-surface-raised); color: var(--ros-text-muted); border: 1px solid var(--ros-border); }
-    .prog-wrap { display: flex; align-items: center; gap: 10px; min-width: 180px; }
+    .prog-wrap { display: flex; align-items: center; gap: 10px; min-width: 160px; }
     .prog-track { flex: 1; height: 7px; background: var(--ros-bg); border-radius: 999px; overflow: hidden; border: 1px solid var(--ros-border); }
     .prog-fill { height: 100%; background: var(--ros-accent); transition: width 0.25s; }
 
@@ -178,7 +179,7 @@
     .chapter-row:last-child { border-bottom: none; }
     .ch-title { font-size: 0.87rem; font-weight: 500; }
     .ch-sub { font-size: 0.74rem; color: var(--ros-text-muted); margin-top: 2px; }
-    .pills { display: flex; flex-wrap: wrap; gap: 4px; }
+    .pills { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }
     .r-pill {
       width: 28px; height: 26px; border-radius: 6px; font-size: 0.72rem; font-weight: 700;
       border: 1px solid var(--ros-border); background: var(--ros-bg); color: var(--ros-text-muted);
@@ -187,14 +188,19 @@
     .r-pill:hover { border-color: var(--ros-accent); color: var(--ros-text); }
     .r-pill.done { background: var(--ros-accent); color: var(--ros-accent-text); border-color: var(--ros-accent); }
 
+    .inline-add {
+      display: flex; gap: 8px; padding-top: 10px; margin-top: 6px;
+      border-top: 1px dashed var(--ros-border);
+    }
+
     select.curve-select {
-      padding: 5px 8px; font-size: 0.76rem; border-radius: 6px;
+      padding: 6px 10px; font-size: 0.78rem; border-radius: 6px; min-width: 190px;
       background: var(--ros-bg); color: var(--ros-text); border: 1px solid var(--ros-border);
     }
 
     /* Modals */
     .modal-overlay {
-      display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.72);
+      display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.74);
       z-index: 1000; align-items: center; justify-content: center; padding: 16px;
     }
     .modal-overlay.open { display: flex; }
@@ -229,7 +235,6 @@
     <!-- Top Navigation -->
     <header class="topbar">
       <div class="brand">
-        <!-- Dark SVG Icon -->
         <svg class="brand-icon logo-dark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
           <rect width="512" height="512" rx="112" fill="#0F1117" stroke="#2A303C" stroke-width="14"/>
           <path d="M126 136h196c58 0 83 39 83 83 0 42-24 70-62 81l-56 16-49-62h74c25 0 38-14 38-35 0-23-14-36-39-36H126z" fill="#F4F4EE"/>
@@ -237,7 +242,6 @@
           <path d="M244 254h76l138 118H351z" fill="#C6F36B"/>
           <path d="M198 254h46l-96 118H74z" fill="#F4F4EE"/>
         </svg>
-        <!-- Light SVG Icon -->
         <svg class="brand-icon logo-light" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
           <rect width="512" height="512" rx="112" fill="#F4F4EE" stroke="#D8DAD3" stroke-width="14"/>
           <path d="M126 136h196c58 0 83 39 83 83 0 42-24 70-62 81l-56 16-49-62h74c25 0 38-14 38-35 0-23-14-36-39-36H126z" fill="#0F1117"/>
@@ -259,9 +263,10 @@
         <div id="authArea">
           <button class="btn btn-accent" id="btnSignIn">Sign in with Google</button>
         </div>
-        <button class="btn" id="btnTheme" title="Toggle Dark / Paper Light Theme">Theme</button>
+        <button class="btn" id="btnManageSyllabus">+ Subject / Chapter</button>
         <button class="btn" id="btnCurves">Curves &amp; Cycles</button>
         <button class="btn" id="btnMindMap">Syllabus Mind Map</button>
+        <button class="btn" id="btnTheme">Theme</button>
         <button class="btn" id="btnExport">Export JSON</button>
       </div>
     </header>
@@ -270,12 +275,12 @@
     <section class="kpi-grid">
       <div class="card">
         <div class="kpi-label">Syllabus Initiated</div>
-        <div class="kpi-val" id="kpiStarted"><span>2</span> / 148</div>
-        <div class="kpi-sub" id="kpiStartedPct">1.4% first reading logged</div>
+        <div class="kpi-val" id="kpiStarted"><span>0</span> / 148</div>
+        <div class="kpi-sub" id="kpiStartedPct">0% first reading logged</div>
       </div>
       <div class="card">
         <div class="kpi-label">Total Revision Passes</div>
-        <div class="kpi-val" id="kpiPasses"><span>2</span> / 1,332</div>
+        <div class="kpi-val" id="kpiPasses"><span>0</span> / 1,332</div>
         <div class="kpi-sub">Across 9-step spaced cycles</div>
       </div>
       <div class="card">
@@ -317,11 +322,39 @@
         </div>
         <select class="curve-select" id="globalCurveSelect"></select>
       </div>
-      <input type="search" class="search-box" id="searchInput" placeholder="Search 148 chapters or subjects..." />
+      <input type="search" class="search-box" id="searchInput" placeholder="Search chapters or subjects..." />
     </section>
 
     <!-- Syllabus Accordions -->
     <main id="syllabusContainer"></main>
+  </div>
+
+  <!-- Add / Delete Subject & Chapter Modal -->
+  <div class="modal-overlay" id="modalSyllabus">
+    <div class="modal">
+      <div class="modal-head">
+        <h3>Manage Subjects &amp; Chapters</h3>
+        <button class="btn" data-close="modalSyllabus">Close</button>
+      </div>
+
+      <div style="margin-bottom:18px;padding-bottom:14px;border-bottom:1px solid var(--ros-border)">
+        <div class="kpi-label" style="margin-bottom:8px">Add New Subject</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <input type="text" id="newSubjectName" class="text-input" style="flex:1;min-width:180px" placeholder="Subject name (e.g., Ethics & Integrity)" />
+          <input type="text" id="newSubjectPillar" class="text-input" style="width:180px" placeholder="Pillar (e.g., GS Paper IV)" />
+          <button class="btn btn-accent" id="btnAddSubject">Add Subject</button>
+        </div>
+      </div>
+
+      <div>
+        <div class="kpi-label" style="margin-bottom:8px">Add New Chapter to Subject</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <select id="targetSubjectSelect" class="curve-select" style="min-width:190px"></select>
+          <input type="text" id="newChapterName" class="text-input" style="flex:1;min-width:200px" placeholder="Chapter / Topic title..." />
+          <button class="btn btn-accent" id="btnAddChapter">Add Chapter</button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- Curves & Custom Template Modal -->
@@ -334,7 +367,7 @@
       <p class="kpi-sub" style="margin-bottom:12px">Customize your 9-step day intervals (R1 to R9) or assign distinct curves per subject when Mode 2 is active.</p>
       <div style="margin-bottom:14px">
         <label class="kpi-label">Create Custom Curve</label>
-        <input type="text" id="customCurveName" class="search-box" style="max-width:100%;margin-top:6px" placeholder="Template name (e.g., Intensive Prelims 45-Day)" />
+        <input type="text" id="customCurveName" class="text-input" style="width:100%;margin-top:6px" placeholder="Template name (e.g., Intensive Prelims 45-Day)" />
         <div class="input-row" id="customDaysInputs"></div>
         <button class="btn btn-accent" id="btnSaveCurve">Save &amp; Apply Custom Curve</button>
       </div>
@@ -360,7 +393,7 @@
     const STORAGE_KEY = 'reviseos_netlify_v1';
     const THEME_KEY = 'reviseos_theme_v1';
 
-    const PILLAR_MAP = {
+    const DEFAULT_PILLARS = {
       'Economy & Social Dev': 'Polity & Economy',
       'Indian Polity': 'Polity & Economy',
       'Modern History': 'History & Culture',
@@ -544,9 +577,9 @@
     ];
 
     function addDays(dateStr, days) {
-      const d = new Date(dateStr);
-      d.setDate(d.getDate() + days);
-      return d.toISOString().slice(0, 10);
+      const base = dateStr && !isNaN(new Date(dateStr).getTime()) ? new Date(dateStr) : new Date();
+      base.setDate(base.getDate() + (Number(days) || 1));
+      return base.toISOString().slice(0, 10);
     }
 
     function todayISO() {
@@ -567,21 +600,81 @@
         mode: 'general',
         globalCurve: 'standard',
         subjectCurves: {},
+        pillars: { ...DEFAULT_PILLARS },
         templates: JSON.parse(JSON.stringify(DEFAULT_TEMPLATES)),
         chapters,
         updatedAt: Date.now()
       };
     }
 
+    // Self-healing schema normalizer: seamlessly recovers older cloud/local saves
+    function normalizeState(raw) {
+      if (!raw || typeof raw !== 'object') return buildInitialState();
+      const today = todayISO();
+      const templates = (raw.templates && Object.keys(raw.templates).length > 0)
+        ? raw.templates
+        : JSON.parse(JSON.stringify(DEFAULT_TEMPLATES));
+
+      // Normalize template formats if days array was stored under intervals
+      Object.keys(templates).forEach(k => {
+        if (!Array.isArray(templates[k].days)) {
+          templates[k].days = Array.isArray(templates[k].intervals)
+            ? templates[k].intervals
+            : [1, 3, 7, 14, 30, 45, 60, 90, 120];
+        }
+        if (!templates[k].name) templates[k].name = k;
+      });
+
+      const globalCurve = templates[raw.globalCurve] ? raw.globalCurve : Object.keys(templates)[0];
+      const mode = raw.mode === 'subject' ? 'subject' : 'general';
+      const subjectCurves = (raw.subjectCurves && typeof raw.subjectCurves === 'object') ? raw.subjectCurves : {};
+      const pillars = { ...DEFAULT_PILLARS, ...(raw.pillars || {}) };
+
+      const sourceChapters = Array.isArray(raw.chapters) && raw.chapters.length > 0
+        ? raw.chapters
+        : buildInitialState().chapters;
+
+      const chapters = sourceChapters.map((c, idx) => {
+        const subject = c.subject || 'General Studies';
+        const title = c.title || c.name || ('Chapter ' + (idx + 1));
+        const readings = Number(c.readings ?? (Array.isArray(c.history) ? c.history.length : 0)) || 0;
+        const lastRead = readings > 0 ? (c.lastRead || (Array.isArray(c.history) && c.history.length ? c.history[c.history.length - 1].date : today)) : null;
+        let nextDue = null;
+        if (readings > 0) {
+          if (c.nextDue && typeof c.nextDue === 'string') {
+            nextDue = c.nextDue.slice(0, 10);
+          } else {
+            const cKey = mode === 'subject' && subjectCurves[subject] ? subjectCurves[subject] : globalCurve;
+            const tpl = templates[cKey] || templates[globalCurve];
+            const interval = tpl.days[Math.min(readings - 1, tpl.days.length - 1)] || 1;
+            nextDue = addDays(lastRead, interval);
+          }
+        }
+        return {
+          id: c.id || ('ch_' + (idx + 1) + '_' + Math.random().toString(36).slice(2, 6)),
+          subject,
+          title,
+          readings,
+          lastRead,
+          nextDue
+        };
+      });
+
+      return {
+        mode,
+        globalCurve,
+        subjectCurves,
+        pillars,
+        templates,
+        chapters,
+        updatedAt: raw.updatedAt || Date.now()
+      };
+    }
+
     let state = (() => {
       try {
         const saved = localStorage.getItem(STORAGE_KEY);
-        if (saved) {
-          const parsed = JSON.parse(saved);
-          if (parsed && Array.isArray(parsed.chapters) && parsed.chapters.length === 148) {
-            return parsed;
-          }
-        }
+        if (saved) return normalizeState(JSON.parse(saved));
       } catch (e) {}
       return buildInitialState();
     })();
@@ -602,7 +695,15 @@
       const key = state.mode === 'subject' && state.subjectCurves[subject]
         ? state.subjectCurves[subject]
         : state.globalCurve;
-      return state.templates[key] || state.templates.standard;
+      return state.templates[key] || Object.values(state.templates)[0];
+    }
+
+    function getUniqueSubjects() {
+      const list = [];
+      state.chapters.forEach(c => {
+        if (!list.includes(c.subject)) list.push(c.subject);
+      });
+      return list;
     }
 
     function toggleReading(chId, stepIdx) {
@@ -625,6 +726,8 @@
 
     function renderAll() {
       const today = todayISO();
+      const totalChapters = state.chapters.length;
+      const totalMaxPasses = totalChapters * 9;
       let started = 0, passes = 0, dueCount = 0;
       const scheduled = [];
 
@@ -639,17 +742,19 @@
         }
       });
 
-      document.getElementById('kpiStarted').innerHTML = `<span>${started}</span> / 148`;
-      document.getElementById('kpiStartedPct').textContent = `${((started / 148) * 100).toFixed(1)}% first reading logged`;
-      document.getElementById('kpiPasses').innerHTML = `<span>${passes}</span> / 1,332`;
+      document.getElementById('kpiStarted').innerHTML = `<span>${started}</span> / ${totalChapters}`;
+      document.getElementById('kpiStartedPct').textContent = totalChapters
+        ? `${((started / totalChapters) * 100).toFixed(1)}% first reading logged`
+        : '0% first reading logged';
+      document.getElementById('kpiPasses').innerHTML = `<span>${passes}</span> / ${totalMaxPasses.toLocaleString()}`;
       document.getElementById('kpiDue').innerHTML = `<span>${dueCount}</span>`;
       document.getElementById('kpiMode').innerHTML = state.mode === 'general'
         ? `<span>General</span> Revise`
         : `<span>Subject</span> Specific`;
-      const activeTpl = state.templates[state.globalCurve] || state.templates.standard;
-      document.getElementById('kpiCurveLabel').textContent = activeTpl.name;
 
-      // Mode buttons & curve selector
+      const activeTpl = state.templates[state.globalCurve] || Object.values(state.templates)[0];
+      document.getElementById('kpiCurveLabel').textContent = activeTpl ? activeTpl.name : 'Standard UPSC Curve';
+
       document.getElementById('modeGeneral').classList.toggle('active', state.mode === 'general');
       document.getElementById('modeSubject').classList.toggle('active', state.mode === 'subject');
 
@@ -665,7 +770,7 @@
       if (!scheduled.length) {
         qList.innerHTML = `<div class="kpi-sub">Click R1 on any chapter below to start its spaced repetition schedule.</div>`;
       } else {
-        qList.innerHTML = scheduled.slice(0, 12).map(ch => {
+        qList.innerHTML = scheduled.slice(0, 15).map(ch => {
           const isDue = ch.nextDue <= today;
           return `<div class="queue-item">
             <div>
@@ -693,7 +798,7 @@
 
       // Subject Accordions
       const query = document.getElementById('searchInput').value.trim().toLowerCase();
-      const subjects = [...new Set(RAW_SYLLABUS.map(r => r[0]))];
+      const subjects = getUniqueSubjects();
       const container = document.getElementById('syllabusContainer');
 
       container.innerHTML = subjects.map(subj => {
@@ -704,12 +809,12 @@
         if (query && !filtered.length) return '';
 
         const doneCount = allCh.filter(c => c.readings > 0).length;
-        const pct = Math.round((doneCount / allCh.length) * 100);
+        const pct = allCh.length ? Math.round((doneCount / allCh.length) * 100) : 0;
         const isOpen = query ? true : expandedSubjects.has(subj);
         const subjCurveKey = state.subjectCurves[subj] || state.globalCurve;
 
         const curveDropdown = state.mode === 'subject'
-          ? `<select class="curve-select" data-subj-curve="${subj}" onclick="event.stopPropagation()">
+          ? `<select class="curve-select" style="min-width:140px" data-subj-curve="${subj}">
               ${Object.entries(state.templates).map(([k, v]) => `<option value="${k}" ${k === subjCurveKey ? 'selected' : ''}>${v.name.split(' (')[0]}</option>`).join('')}
             </select>`
           : '';
@@ -726,9 +831,14 @@
                     ${Array.from({ length: 9 }, (_, i) => `
                       <button class="r-pill ${i < ch.readings ? 'done' : ''}" data-ch="${ch.id}" data-step="${i}">R${i + 1}</button>
                     `).join('')}
+                    <button class="btn btn-danger" data-del-ch="${ch.id}" title="Delete Chapter">✕</button>
                   </div>
                 </div>
               `).join('')}
+              <div class="inline-add">
+                <input type="text" class="text-input" style="flex:1" placeholder="Add a new chapter to ${subj}..." data-quick-input="${subj}" />
+                <button class="btn btn-accent" data-quick-add="${subj}">+ Add Chapter</button>
+              </div>
             </div>`
           : '';
 
@@ -736,14 +846,15 @@
           <div class="subject-head" data-toggle-subj="${subj}">
             <div class="subj-meta">
               <span class="subj-name">${subj}</span>
-              <span class="pillar-tag">${PILLAR_MAP[subj] || 'General Studies'}</span>
+              <span class="pillar-tag">${(state.pillars && state.pillars[subj]) || 'General Studies'}</span>
             </div>
-            <div style="display:flex;align-items:center;gap:12px">
+            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
               ${curveDropdown}
               <div class="prog-wrap">
                 <div class="prog-track"><div class="prog-fill" style="width:${pct}%"></div></div>
                 <span class="kpi-sub">${doneCount}/${allCh.length}</span>
               </div>
+              <button class="btn btn-danger" data-del-subj="${subj}" title="Delete Subject">Delete</button>
             </div>
           </div>
           ${chaptersHtml}
@@ -758,8 +869,47 @@
         toggleReading(pill.dataset.ch, Number(pill.dataset.step));
         return;
       }
+      const delCh = e.target.closest('[data-del-ch]');
+      if (delCh) {
+        const ch = state.chapters.find(c => c.id === delCh.dataset.delCh);
+        if (ch && confirm(`Delete chapter "${ch.title}"?`)) {
+          state.chapters = state.chapters.filter(c => c.id !== ch.id);
+          saveState();
+        }
+        return;
+      }
+      const delSubj = e.target.closest('[data-del-subj]');
+      if (delSubj) {
+        const s = delSubj.dataset.delSubj;
+        if (confirm(`Delete entire subject "${s}" and all its chapters?`)) {
+          state.chapters = state.chapters.filter(c => c.subject !== s);
+          delete state.subjectCurves[s];
+          if (state.pillars) delete state.pillars[s];
+          expandedSubjects.delete(s);
+          saveState();
+        }
+        return;
+      }
+      const quickAdd = e.target.closest('[data-quick-add]');
+      if (quickAdd) {
+        const subj = quickAdd.dataset.quickAdd;
+        const inp = document.querySelector(`[data-quick-input="${CSS.escape(subj)}"]`);
+        const title = inp ? inp.value.trim() : '';
+        if (title) {
+          state.chapters.push({
+            id: 'ch_' + Date.now() + '_' + Math.random().toString(36).slice(2, 5),
+            subject: subj,
+            title,
+            readings: 0,
+            lastRead: null,
+            nextDue: null
+          });
+          saveState();
+        }
+        return;
+      }
       const head = e.target.closest('[data-toggle-subj]');
-      if (head && !e.target.closest('select')) {
+      if (head && !e.target.closest('select') && !e.target.closest('button')) {
         const s = head.dataset.toggleSubj;
         if (expandedSubjects.has(s)) expandedSubjects.delete(s);
         else expandedSubjects.add(s);
@@ -784,6 +934,60 @@
     document.getElementById('globalCurveSelect').onchange = e => { state.globalCurve = e.target.value; saveState(); };
     document.getElementById('searchInput').oninput = () => renderAll();
 
+    // Manage Subjects & Chapters Modal
+    function refreshSubjectDropdown() {
+      const subjects = getUniqueSubjects();
+      document.getElementById('targetSubjectSelect').innerHTML = subjects
+        .map(s => `<option value="${s}">${s}</option>`)
+        .join('');
+    }
+
+    document.getElementById('btnManageSyllabus').onclick = () => {
+      refreshSubjectDropdown();
+      document.getElementById('modalSyllabus').classList.add('open');
+    };
+
+    document.getElementById('btnAddSubject').onclick = () => {
+      const name = document.getElementById('newSubjectName').value.trim();
+      const pillar = document.getElementById('newSubjectPillar').value.trim() || 'General Studies';
+      if (!name) return;
+      if (!state.pillars) state.pillars = {};
+      state.pillars[name] = pillar;
+      if (!state.chapters.some(c => c.subject === name)) {
+        state.chapters.push({
+          id: 'ch_' + Date.now(),
+          subject: name,
+          title: 'Introduction & Overview',
+          readings: 0,
+          lastRead: null,
+          nextDue: null
+        });
+      }
+      expandedSubjects.add(name);
+      document.getElementById('newSubjectName').value = '';
+      document.getElementById('newSubjectPillar').value = '';
+      refreshSubjectDropdown();
+      saveState();
+    };
+
+    document.getElementById('btnAddChapter').onclick = () => {
+      const subj = document.getElementById('targetSubjectSelect').value;
+      const title = document.getElementById('newChapterName').value.trim();
+      if (!subj || !title) return;
+      state.chapters.push({
+        id: 'ch_' + Date.now() + '_' + Math.random().toString(36).slice(2, 5),
+        subject: subj,
+        title,
+        readings: 0,
+        lastRead: null,
+        nextDue: null
+      });
+      expandedSubjects.add(subj);
+      document.getElementById('newChapterName').value = '';
+      saveState();
+      document.getElementById('modalSyllabus').classList.remove('open');
+    };
+
     // Theme Toggle
     function applyTheme(t) {
       if (t === 'light') document.documentElement.setAttribute('data-theme', 'light');
@@ -802,7 +1006,7 @@
       document.getElementById('customDaysInputs').innerHTML = defaults
         .map((d, i) => `<input type="number" class="num-in" id="cd_${i}" value="${d}" min="1" />`)
         .join('');
-      const subjects = [...new Set(RAW_SYLLABUS.map(r => r[0]))];
+      const subjects = getUniqueSubjects();
       document.getElementById('subjectCycleMatrix').innerHTML = `
         <div class="kpi-label" style="margin:12px 0 8px">Subject-Specific Assignments (Mode 2)</div>
         ${subjects.map(s => `
@@ -829,15 +1033,15 @@
 
     // Mind Map Modal
     document.getElementById('btnMindMap').onclick = () => {
-      const subjects = [...new Set(RAW_SYLLABUS.map(r => r[0]))];
+      const subjects = getUniqueSubjects();
       document.getElementById('mindMapGrid').innerHTML = subjects.map(s => {
         const chs = state.chapters.filter(c => c.subject === s);
         const started = chs.filter(c => c.readings > 0).length;
         return `<div class="mm-node ${started > 0 ? 'active' : ''}">
-          <div class="pillar-tag" style="display:inline-block;margin-bottom:6px">${PILLAR_MAP[s]}</div>
+          <div class="pillar-tag" style="display:inline-block;margin-bottom:6px">${(state.pillars && state.pillars[s]) || 'General Studies'}</div>
           <div style="font-weight:700;font-size:0.95rem">${s}</div>
           <div class="kpi-sub" style="margin-top:4px">${started} / ${chs.length} chapters initiated</div>
-          <div class="mm-link">${LINKAGES[s] || ''}</div>
+          <div class="mm-link">${LINKAGES[s] || 'Custom syllabus module'}</div>
         </div>`;
       }).join('');
       document.getElementById('modalMindMap').classList.add('open');
@@ -852,16 +1056,14 @@
       a.click();
     };
 
-    // Expose bridge for Firebase module
+    // Bridge for Firebase module
     window.__reviseOS = {
       getState: () => state,
       applyRemoteState: remote => {
-        if (remote && Array.isArray(remote.chapters) && remote.chapters.length === 148) {
-          if ((remote.updatedAt || 0) >= (state.updatedAt || 0)) {
-            state = remote;
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-            renderAll();
-          }
+        if (remote && Array.isArray(remote.chapters) && remote.chapters.length > 0) {
+          state = normalizeState(remote);
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+          renderAll();
         }
       },
       setCloudHook: fn => { cloudSaveHook = fn; }
@@ -870,7 +1072,7 @@
     renderAll();
   </script>
 
-  <!-- Firebase Auth & Firestore Sync (Non-Blocking ES Module) -->
+  <!-- Firebase Auth & Firestore Sync -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
@@ -918,6 +1120,7 @@
         const snap = await getDoc(ref);
         if (snap.exists()) {
           window.__reviseOS.applyRemoteState(snap.data());
+          await pushToCloud(uid, window.__reviseOS.getState());
         } else {
           await pushToCloud(uid, window.__reviseOS.getState());
         }
