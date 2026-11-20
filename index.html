@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0F1117" />
+  <title>Revision OS — Your Revision System</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='112' fill='%230F1117'/%3E%3Cpath d='M126 136h196c58 0 83 39 83 83 0 42-24 70-62 81l-56 16-49-62h74c25 0 38-14 38-35 0-23-14-36-39-36H126z' fill='%23F4F4EE'/%3E%3Cpath d='M126 136h76v236h-76z' fill='%23F4F4EE'/%3E%3Cpath d='M244 254h76l138 118H351z' fill='%23C6F36B'/%3E%3Cpath d='M198 254h46l-96 118H74z' fill='%23F4F4EE'/%3E%3C/svg%3E" />
+  <style>
+    :root {
+      --ros-charcoal: #0F1117;
+      --ros-lime: #C6F36B;
+      --ros-paper: #F4F4EE;
+      --ros-slate: #3B4354;
+      --ros-muted: #6B7280;
+
+      --ros-bg: var(--ros-charcoal);
+      --ros-surface: #171B24;
+      --ros-surface-raised: #202635;
+      --ros-text: var(--ros-paper);
+      --ros-text-muted: #9CA3AF;
+      --ros-border: #2A303C;
+      --ros-accent: var(--ros-lime);
+      --ros-accent-text: #0F1117;
+
+      --ros-font: Inter, Manrope, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --ros-radius-sm: 8px;
+      --ros-radius-md: 14px;
+      --ros-radius-lg: 22px;
+    }
+
+    [data-theme="light"] {
+      --ros-bg: var(--ros-paper);
+      --ros-surface: #FFFFFF;
+      --ros-surface-raised: #EAEAE3;
+      --ros-text: var(--ros-charcoal);
+      --ros-text-muted: #555D6B;
+      --ros-border: #D8DAD3;
+      --ros-accent: #577A20;
+      --ros-accent-text: #FFFFFF;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: var(--ros-font);
+      background: var(--ros-bg);
+      color: var(--ros-text);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      transition: background 0.2s ease, color 0.2s ease;
+    }
+
+    .container { max-width: 1180px; margin: 0 auto; padding: 18px 16px 64px; }
+
+    /* Header */
+    .topbar {
+      display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+      gap: 14px; padding: 14px 18px; margin-bottom: 20px;
+      background: var(--ros-surface); border: 1px solid var(--ros-border);
+      border-radius: var(--ros-radius-lg);
+    }
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .brand-icon { width: 42px; height: 42px; flex-shrink: 0; }
+    [data-theme="light"] .logo-dark { display: none; }
+    html:not([data-theme="light"]) .logo-light { display: none; }
+    .brand-title { font-size: 1.25rem; font-weight: 700; letter-spacing: -0.02em; }
+    .brand-title span { color: var(--ros-accent); }
+    .brand-sub { font-size: 0.68rem; letter-spacing: 0.2em; color: var(--ros-muted); font-weight: 600; text-transform: uppercase; }
+
+    .actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+    .btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 8px 13px; font-size: 0.82rem; font-weight: 600;
+      border-radius: var(--ros-radius-sm); border: 1px solid var(--ros-border);
+      background: var(--ros-surface-raised); color: var(--ros-text);
+      cursor: pointer; transition: all 0.15s ease;
+    }
+    .btn:hover { border-color: var(--ros-accent); }
+    .btn-accent {
+      background: var(--ros-accent); color: var(--ros-accent-text);
+      border-color: var(--ros-accent);
+    }
+    .btn-accent:hover { opacity: 0.92; }
+
+    .sync-pill {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 5px 10px; border-radius: 999px; font-size: 0.75rem; font-weight: 600;
+      background: var(--ros-surface-raised); border: 1px solid var(--ros-border);
+      color: var(--ros-text-muted);
+    }
+    .sync-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--ros-muted); }
+    .sync-dot.online { background: #22C55E; box-shadow: 0 0 8px rgba(34, 197, 94, 0.5); }
+    .sync-dot.saving { background: var(--ros-accent); }
+    .avatar { width: 22px; height: 22px; border-radius: 50%; object-fit: cover; }
+
+    /* KPI Grid */
+    .kpi-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 14px; margin-bottom: 20px;
+    }
+    .card {
+      background: var(--ros-surface); border: 1px solid var(--ros-border);
+      border-radius: var(--ros-radius-md); padding: 16px;
+    }
+    .kpi-label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ros-text-muted); font-weight: 600; }
+    .kpi-val { font-size: 1.75rem; font-weight: 700; margin: 6px 0 4px; letter-spacing: -0.03em; }
+    .kpi-val span { color: var(--ros-accent); }
+    .kpi-sub { font-size: 0.78rem; color: var(--ros-text-muted); }
+
+    /* Mode & Controls Bar */
+    .toolbar {
+      display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+      gap: 12px; margin-bottom: 18px; padding: 12px 16px;
+      background: var(--ros-surface); border: 1px solid var(--ros-border);
+      border-radius: var(--ros-radius-md);
+    }
+    .mode-switch {
+      display: inline-flex; background: var(--ros-bg); padding: 4px;
+      border-radius: var(--ros-radius-sm); border: 1px solid var(--ros-border);
+    }
+    .mode-btn {
+      padding: 6px 12px; font-size: 0.8rem; font-weight: 600; border: none;
+      border-radius: 6px; background: transparent; color: var(--ros-text-muted); cursor: pointer;
+    }
+    .mode-btn.active { background: var(--ros-accent); color: var(--ros-accent-text); }
+
+    .search-box {
+      flex: 1; min-width: 220px; max-width: 340px;
+      padding: 8px 12px; font-size: 0.85rem;
+      background: var(--ros-bg); color: var(--ros-text);
+      border: 1px solid var(--ros-border); border-radius: var(--ros-radius-sm);
+    }
+    .search-box:focus { outline: none; border-color: var(--ros-accent); }
+
+    /* Queue & Forecast */
+    .two-col { display: grid; grid-template-columns: 1.3fr 1fr; gap: 14px; margin-bottom: 20px; }
+    @media (max-width: 820px) { .two-col { grid-template-columns: 1fr; } }
+    .section-title { font-size: 0.92rem; font-weight: 700; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; }
+    .queue-list { display: flex; flex-direction: column; gap: 8px; max-height: 220px; overflow-y: auto; }
+    .queue-item {
+      display: flex; align-items: center; justify-content: space-between; gap: 10px;
+      padding: 9px 12px; background: var(--ros-surface-raised);
+      border: 1px solid var(--ros-border); border-radius: var(--ros-radius-sm); font-size: 0.83rem;
+    }
+    .badge {
+      padding: 2px 8px; border-radius: 999px; font-size: 0.72rem; font-weight: 700;
+      background: rgba(198, 243, 107, 0.14); color: var(--ros-accent); border: 1px solid rgba(198, 243, 107, 0.3);
+    }
+    .badge.due { background: rgba(239, 68, 68, 0.16); color: #F87171; border-color: rgba(239, 68, 68, 0.35); }
+
+    .forecast-bars { display: flex; align-items: flex-end; gap: 8px; height: 140px; padding-top: 18px; }
+    .f-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; height: 100%; justify-content: flex-end; }
+    .f-bar { width: 100%; max-width: 34px; background: var(--ros-accent); border-radius: 6px 6px 2px 2px; min-height: 4px; transition: height 0.25s; }
+    .f-lbl { font-size: 0.7rem; color: var(--ros-text-muted); font-weight: 600; }
+
+    /* Subject Accordions */
+    .subject-card {
+      background: var(--ros-surface); border: 1px solid var(--ros-border);
+      border-radius: var(--ros-radius-md); margin-bottom: 12px; overflow: hidden;
+    }
+    .subject-head {
+      display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+      gap: 10px; padding: 14px 16px; cursor: pointer; user-select: none;
+    }
+    .subject-head:hover { background: var(--ros-surface-raised); }
+    .subj-meta { display: flex; align-items: center; gap: 10px; }
+    .subj-name { font-weight: 700; font-size: 0.96rem; }
+    .pillar-tag { font-size: 0.7rem; padding: 2px 8px; border-radius: 6px; background: var(--ros-surface-raised); color: var(--ros-text-muted); border: 1px solid var(--ros-border); }
+    .prog-wrap { display: flex; align-items: center; gap: 10px; min-width: 180px; }
+    .prog-track { flex: 1; height: 7px; background: var(--ros-bg); border-radius: 999px; overflow: hidden; border: 1px solid var(--ros-border); }
+    .prog-fill { height: 100%; background: var(--ros-accent); transition: width 0.25s; }
+
+    .chapter-list { border-top: 1px solid var(--ros-border); padding: 8px 16px 14px; }
+    .chapter-row {
+      display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+      gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--ros-border);
+    }
+    .chapter-row:last-child { border-bottom: none; }
+    .ch-title { font-size: 0.87rem; font-weight: 500; }
+    .ch-sub { font-size: 0.74rem; color: var(--ros-text-muted); margin-top: 2px; }
+    .pills { display: flex; flex-wrap: wrap; gap: 4px; }
+    .r-pill {
+      width: 28px; height: 26px; border-radius: 6px; font-size: 0.72rem; font-weight: 700;
+      border: 1px solid var(--ros-border); background: var(--ros-bg); color: var(--ros-text-muted);
+      cursor: pointer; transition: all 0.12s;
+    }
+    .r-pill:hover { border-color: var(--ros-accent); color: var(--ros-text); }
+    .r-pill.done { background: var(--ros-accent); color: var(--ros-accent-text); border-color: var(--ros-accent); }
+
+    select.curve-select {
+      padding: 5px 8px; font-size: 0.76rem; border-radius: 6px;
+      background: var(--ros-bg); color: var(--ros-text); border: 1px solid var(--ros-border);
+    }
+
+    /* Modals */
+    .modal-overlay {
+      display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.72);
+      z-index: 1000; align-items: center; justify-content: center; padding: 16px;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: var(--ros-surface); border: 1px solid var(--ros-border);
+      border-radius: var(--ros-radius-lg); width: 100%; max-width: 680px;
+      max-height: 88vh; overflow-y: auto; padding: 20px;
+    }
+    .modal.wide { max-width: 980px; }
+    .modal-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+    .input-row { display: grid; grid-template-columns: repeat(9, 1fr); gap: 6px; margin: 10px 0; }
+    .num-in {
+      width: 100%; padding: 6px 4px; text-align: center; font-size: 0.8rem;
+      background: var(--ros-bg); color: var(--ros-text); border: 1px solid var(--ros-border); border-radius: 6px;
+    }
+    .mindmap-canvas {
+      position: relative; width: 100%; height: 460px; overflow: auto;
+      background: var(--ros-bg); border: 1px solid var(--ros-border);
+      border-radius: var(--ros-radius-md); padding: 20px;
+    }
+    .mm-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; }
+    .mm-node {
+      background: var(--ros-surface); border: 1px solid var(--ros-border);
+      border-radius: var(--ros-radius-md); padding: 12px;
+    }
+    .mm-node.active { border-color: var(--ros-accent); }
+    .mm-link { font-size: 0.75rem; color: var(--ros-accent); margin-top: 6px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Top Navigation -->
+    <header class="topbar">
+      <div class="brand">
+        <!-- Dark SVG Icon -->
+        <svg class="brand-icon logo-dark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+          <rect width="512" height="512" rx="112" fill="#0F1117" stroke="#2A303C" stroke-width="14"/>
+          <path d="M126 136h196c58 0 83 39 83 83 0 42-24 70-62 81l-56 16-49-62h74c25 0 38-14 38-35 0-23-14-36-39-36H126z" fill="#F4F4EE"/>
+          <path d="M126 136h76v236h-76z" fill="#F4F4EE"/>
+          <path d="M244 254h76l138 118H351z" fill="#C6F36B"/>
+          <path d="M198 254h46l-96 118H74z" fill="#F4F4EE"/>
+        </svg>
+        <!-- Light SVG Icon -->
+        <svg class="brand-icon logo-light" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+          <rect width="512" height="512" rx="112" fill="#F4F4EE" stroke="#D8DAD3" stroke-width="14"/>
+          <path d="M126 136h196c58 0 83 39 83 83 0 42-24 70-62 81l-56 16-49-62h74c25 0 38-14 38-35 0-23-14-36-39-36H126z" fill="#0F1117"/>
+          <path d="M126 136h76v236h-76z" fill="#0F1117"/>
+          <path d="M244 254h76l138 118H351z" fill="#C6F36B"/>
+          <path d="M198 254h46l-96 118H74z" fill="#0F1117"/>
+        </svg>
+        <div>
+          <div class="brand-title">Revision <span>OS</span></div>
+          <div class="brand-sub">Your Revision System</div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <span class="sync-pill" id="syncPill">
+          <span class="sync-dot" id="syncDot"></span>
+          <span id="syncText">Local Storage</span>
+        </span>
+        <div id="authArea">
+          <button class="btn btn-accent" id="btnSignIn">Sign in with Google</button>
+        </div>
+        <button class="btn" id="btnTheme" title="Toggle Dark / Paper Light Theme">Theme</button>
+        <button class="btn" id="btnCurves">Curves &amp; Cycles</button>
+        <button class="btn" id="btnMindMap">Syllabus Mind Map</button>
+        <button class="btn" id="btnExport">Export JSON</button>
+      </div>
+    </header>
+
+    <!-- Executive Readiness KPIs -->
+    <section class="kpi-grid">
+      <div class="card">
+        <div class="kpi-label">Syllabus Initiated</div>
+        <div class="kpi-val" id="kpiStarted"><span>2</span> / 148</div>
+        <div class="kpi-sub" id="kpiStartedPct">1.4% first reading logged</div>
+      </div>
+      <div class="card">
+        <div class="kpi-label">Total Revision Passes</div>
+        <div class="kpi-val" id="kpiPasses"><span>2</span> / 1,332</div>
+        <div class="kpi-sub">Across 9-step spaced cycles</div>
+      </div>
+      <div class="card">
+        <div class="kpi-label">Due Today / Overdue</div>
+        <div class="kpi-val" id="kpiDue"><span>0</span></div>
+        <div class="kpi-sub">Active retention queue</div>
+      </div>
+      <div class="card">
+        <div class="kpi-label">Active Revision Mode</div>
+        <div class="kpi-val" style="font-size:1.15rem;margin-top:10px" id="kpiMode"><span>General</span> Revise</div>
+        <div class="kpi-sub" id="kpiCurveLabel">Standard UPSC Curve</div>
+      </div>
+    </section>
+
+    <!-- Upcoming Queue & 7-Day Forecast -->
+    <section class="two-col">
+      <div class="card">
+        <div class="section-title">
+          <span>Upcoming Topics to Study</span>
+          <span class="kpi-sub" id="queueCount">0 scheduled</span>
+        </div>
+        <div class="queue-list" id="queueList"></div>
+      </div>
+      <div class="card">
+        <div class="section-title">
+          <span>7-Day Revision Load Forecast</span>
+          <span class="kpi-sub">Scheduled chapters</span>
+        </div>
+        <div class="forecast-bars" id="forecastBars"></div>
+      </div>
+    </section>
+
+    <!-- Controls Bar -->
+    <section class="toolbar">
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <div class="mode-switch">
+          <button class="mode-btn active" id="modeGeneral">Mode 1: General Revise</button>
+          <button class="mode-btn" id="modeSubject">Mode 2: Subject-Specific</button>
+        </div>
+        <select class="curve-select" id="globalCurveSelect"></select>
+      </div>
+      <input type="search" class="search-box" id="searchInput" placeholder="Search 148 chapters or subjects..." />
+    </section>
+
+    <!-- Syllabus Accordions -->
+    <main id="syllabusContainer"></main>
+  </div>
+
+  <!-- Curves & Custom Template Modal -->
+  <div class="modal-overlay" id="modalCurves">
+    <div class="modal">
+      <div class="modal-head">
+        <h3>Spaced Repetition Curves &amp; Subject Cycles</h3>
+        <button class="btn" data-close="modalCurves">Close</button>
+      </div>
+      <p class="kpi-sub" style="margin-bottom:12px">Customize your 9-step day intervals (R1 to R9) or assign distinct curves per subject when Mode 2 is active.</p>
+      <div style="margin-bottom:14px">
+        <label class="kpi-label">Create Custom Curve</label>
+        <input type="text" id="customCurveName" class="search-box" style="max-width:100%;margin-top:6px" placeholder="Template name (e.g., Intensive Prelims 45-Day)" />
+        <div class="input-row" id="customDaysInputs"></div>
+        <button class="btn btn-accent" id="btnSaveCurve">Save &amp; Apply Custom Curve</button>
+      </div>
+      <div id="subjectCycleMatrix"></div>
+    </div>
+  </div>
+
+  <!-- Syllabus Mind Map Modal -->
+  <div class="modal-overlay" id="modalMindMap">
+    <div class="modal wide">
+      <div class="modal-head">
+        <h3>Syllabus Mind Map &amp; Interdisciplinary Linkages</h3>
+        <button class="btn" data-close="modalMindMap">Close</button>
+      </div>
+      <p class="kpi-sub" style="margin-bottom:12px">Analyze subject progress, pillar hierarchy, and conceptual cross-linkages across your GS syllabus.</p>
+      <div class="mindmap-canvas">
+        <div class="mm-grid" id="mindMapGrid"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const STORAGE_KEY = 'reviseos_netlify_v1';
+    const THEME_KEY = 'reviseos_theme_v1';
+
+    const PILLAR_MAP = {
+      'Economy & Social Dev': 'Polity & Economy',
+      'Indian Polity': 'Polity & Economy',
+      'Modern History': 'History & Culture',
+      'Ancient History': 'History & Culture',
+      'Medieval History': 'History & Culture',
+      'World Geography': 'Geography & Environment',
+      'Indian Geography': 'Geography & Environment',
+      'Environment & Ecology': 'Geography & Environment',
+      'Physics': 'General Science',
+      'Chemistry': 'General Science'
+    };
+
+    const LINKAGES = {
+      'Economy & Social Dev': 'Links with Indian Polity (Finance Commission, Budget, Federalism)',
+      'Indian Polity': 'Links with Modern History (Constitutional Development) & Economy',
+      'Modern History': 'Links with Indian Polity (Acts of 1909, 1919, 1935) & Culture',
+      'World Geography': 'Links with Indian Geography (Monsoon, Winds, Ocean Currents)',
+      'Indian Geography': 'Links with Environment & Ecology (Soils, Vegetation, River Basins)',
+      'Environment & Ecology': 'Links with Indian Geography (National Parks, Ramsar Wetlands)',
+      'Ancient History': 'Links with Medieval History (Art, Temple Architecture, Literature)',
+      'Medieval History': 'Links with Modern History (Deccan States, European Advent)',
+      'Physics': 'Links with Environment (Nuclear & Solar Energy) & Geography (Space)',
+      'Chemistry': 'Links with Environment (Pollution, Greenhouse Gases) & Biology'
+    };
+
+    const DEFAULT_TEMPLATES = {
+      standard: { name: 'Standard UPSC (1-3-7-14-30-45-60-90-120d)', days: [1, 3, 7, 14, 30, 45, 60, 90, 120] },
+      intensive: { name: 'Intensive Sprint (1-2-4-7-12-20-30-45-60d)', days: [1, 2, 4, 7, 12, 20, 30, 45, 60] },
+      longterm: { name: 'Long-Term Mains (2-5-12-25-45-75-110-150-180d)', days: [2, 5, 12, 25, 45, 75, 110, 150, 180] }
+    };
+
+    const RAW_SYLLABUS = [
+      ["Economy & Social Dev", "Social Development - (ii) Employment and Welfare Schemes", 0],
+      ["Economy & Social Dev", "Social Development - (iii) Poverty & Unemployment", 0],
+      ["Economy & Social Dev", "Social Development - (i) Human Development", 0],
+      ["Economy & Social Dev", "Economic Development - (i) Nature of Indian Economy", 0],
+      ["Economy & Social Dev", "Demography - (i) India : Population", 0],
+      ["Economy & Social Dev", "Economic Development - (ix) Money & Banking", 0],
+      ["Economy & Social Dev", "Economic Development - (vii) Fiscal Policy & Revenue", 0],
+      ["Economy & Social Dev", "Economic Development - (iv) Agriculture and Allied Sectors", 0],
+      ["Economy & Social Dev", "External Sector - (iii) International Organizations", 0],
+      ["Economy & Social Dev", "Economic Development - (iii) Sustainable Economic Development", 0],
+      ["Economy & Social Dev", "budget- India", 0],
+      ["Economy & Social Dev", "eco survey", 0],
+      ["Economy & Social Dev", "UP BUDGET", 0],
+      ["Economy & Social Dev", "FC REPORT", 0],
+      ["Indian Polity", "Panchayati Raj and Community Development", 0],
+      ["Indian Polity", "The Parliament", 0],
+      ["Indian Polity", "States and Union Territories", 0],
+      ["Indian Polity", "Fundamental Rights", 0],
+      ["Indian Polity", "The Supreme Court", 0],
+      ["Indian Polity", "Directive Principles of State Policy", 0],
+      ["Indian Polity", "Constitutional Amendments", 0],
+      ["Indian Polity", "Schedules", 0],
+      ["Indian Polity", "The Parliamentary Act", 0],
+      ["Indian Polity", "The Governance System", 0],
+      ["Indian Polity", "Lokpal and Important Commissions", 0],
+      ["Indian Polity", "Election Commission", 0],
+      ["Indian Polity", "The President", 0],
+      ["Indian Polity", "The Finance Commission", 0],
+      ["Indian Polity", "Articles of the Constitution", 0],
+      ["Indian Polity", "The Centre-State Relations", 0],
+      ["Indian Polity", "Parliamentary Committees", 0],
+      ["Indian Polity", "The Governor", 0],
+      ["Indian Polity", "Official Language", 0],
+      ["Indian Polity", "Parts of Indian Constitution", 0],
+      ["Physics", "Electric current", 0],
+      ["Physics", "Optics", 0],
+      ["Physics", "Heat and Thermodynamics", 0],
+      ["Physics", "Nuclear Physics", 0],
+      ["Physics", "Wave motion", 0],
+      ["Physics", "Space", 0],
+      ["Physics", "Scientists & Inventions", 0],
+      ["Physics", "Mechanics", 0],
+      ["Physics", "Sound", 0],
+      ["Modern History", "Social Religious Movement", 0],
+      ["Modern History", "Governor/Governor General/ Viceroy", 0],
+      ["Modern History", "Other Civil Uprisings", 0],
+      ["Modern History", "Revolutionary Movement in India", 0],
+      ["Modern History", "Trade Union and Communist Party", 0],
+      ["Modern History", "Development of Education in Modern India", 0],
+      ["Modern History", "Modern History : Miscellaneous", 0],
+      ["Modern History", "Constitutional Development of India", 0],
+      ["Modern History", "Regional States: Punjab and Mysore", 0],
+      ["Modern History", "Rowlatt Act and Jallianwala Bagh Massacre (1919)", 0],
+      ["Modern History", "Magazines, Books And Their Authors", 0],
+      ["Modern History", "Advent of European Companies", 0],
+      ["Modern History", "Civil Disobedience Movement", 0],
+      ["Modern History", "Moderates and Extremists in Congress", 0],
+      ["Modern History", "Cabinet Mission Plan (1946)", 0],
+      ["Modern History", "Revolt of 1857", 0],
+      ["Modern History", "Economic Impact of British Rule on India", 0],
+      ["Modern History", "Indian National Congress", 0],
+      ["Modern History", "Quit India Movement", 0],
+      ["Modern History", "Gandhi and His Early Movement", 0],
+      ["Modern History", "Political Organisation Established before Congress", 0],
+      ["Modern History", "Subhash Chandra Bose and Azad Hind Fauj", 0],
+      ["Modern History", "Delhi Durbar and Change of Capital", 0],
+      ["Modern History", "Partition of India and Independence", 0],
+      ["Modern History", "Congress Socialist Party (1934)", 0],
+      ["Modern History", "Second World War", 0],
+      ["Modern History", "Formation of Interim Government (1946)", 0],
+      ["Modern History", "Partition of Bengal and Swadeshi Movement", 0],
+      ["World Geography", "Economic Geography", 0],
+      ["World Geography", "Arid Region/ Desert", 0],
+      ["World Geography", "The Major tribes of the world", 0],
+      ["World Geography", "Hydrosphere", 0],
+      ["World Geography", "The Grasslands", 1],
+      ["World Geography", "The World Mountain Ranges", 0],
+      ["World Geography", "Ocean Currents", 0],
+      ["World Geography", "Canals", 0],
+      ["World Geography", "World Climate", 0],
+      ["World Geography", "Capital cities of the world", 0],
+      ["World Geography", "The Island", 0],
+      ["World Geography", "Rivers of the World", 0],
+      ["World Geography", "Countries and their Borders", 0],
+      ["World Geography", "The Forest", 0],
+      ["World Geography", "Winds", 0],
+      ["World Geography", "The Insolation", 0],
+      ["World Geography", "Towns and Cities along the Banks of Rivers", 0],
+      ["World Geography", "Humidity", 0],
+      ["World Geography", "Local Winds", 0],
+      ["World Geography", "The Ports and Harbours", 1],
+      ["World Geography", "Lakes and Water Falls", 0],
+      ["World Geography", "Transport", 0],
+      ["World Geography", "Earth", 0],
+      ["World Geography", "The Atmosphere", 0],
+      ["World Geography", "The Land-locked Countries", 0],
+      ["World Geography", "World Towns", 0],
+      ["Indian Geography", "Physical Division", 0],
+      ["Indian Geography", "Drainage System", 0],
+      ["Indian Geography", "Mineral Resources", 0],
+      ["Indian Geography", "Climate", 0],
+      ["Indian Geography", "States and Union territories of India", 0],
+      ["Indian Geography", "Industry", 0],
+      ["Indian Geography", "Miscellaneous", 0],
+      ["Indian Geography", "Transport", 0],
+      ["Indian Geography", "Electrical Energy", 0],
+      ["Indian Geography", "Multi-Purpose River Valley Project", 0],
+      ["Indian Geography", "Soils", 0],
+      ["Indian Geography", "Natural Vegetation", 0],
+      ["Indian Geography", "Indian Geography", 0],
+      ["Indian Geography", "Cash Crops", 0],
+      ["Indian Geography", "Species/Tribes", 0],
+      ["Indian Geography", "Plantation Crops", 0],
+      ["Ancient History", "Post-Mauryan Period", 0],
+      ["Ancient History", "Gupta and Post-Gupta Period", 0],
+      ["Ancient History", "Maurya Empire", 0],
+      ["Ancient History", "South India (Chola, Chalukya, Pallava and Sangam Period)", 0],
+      ["Ancient History", "Stone Age", 0],
+      ["Ancient History", "Vedic Age", 0],
+      ["Ancient History", "Early-Medieval Period", 0],
+      ["Ancient History", "Indus Valley Civilization", 0],
+      ["Medieval History", "Mughal Administration", 0],
+      ["Medieval History", "Mughal Period : Miscellaneous", 0],
+      ["Medieval History", "Maratha State and Confederacy", 0],
+      ["Medieval History", "Khalji Dynasty", 0],
+      ["Medieval History", "Akbar", 0],
+      ["Medieval History", "Delhi Sultanate: Administration", 0],
+      ["Medieval History", "Bhakti and Sufi Movement", 0],
+      ["Medieval History", "Delhi Sultanate: Slave Dynasty", 0],
+      ["Medieval History", "Provincial Dynasty of North India and Deccan Province", 0],
+      ["Medieval History", "Mughal Literature", 0],
+      ["Medieval History", "Jahangir", 0],
+      ["Medieval History", "Muslim Invasion of India", 0],
+      ["Medieval History", "Aurangzeb", 0],
+      ["Chemistry", "Organic Chemistry", 0],
+      ["Chemistry", "Non-metals", 0],
+      ["Chemistry", "Metals, Minerals, Ores: Properties, Uses", 0],
+      ["Chemistry", "Food preservation, Nutrition, Medicine, etc.", 0],
+      ["Chemistry", "Physical and Chemical Changes, Solution", 0],
+      ["Chemistry", "Atomic Structure", 0],
+      ["Environment & Ecology", "Environment and Sustainable Development", 0],
+      ["Environment & Ecology", "Pollution", 0],
+      ["Environment & Ecology", "Ecology", 0],
+      ["Environment & Ecology", "Greenhouse Effect and Climate Change", 0],
+      ["Environment & Ecology", "Biodiversity", 0],
+      ["Environment & Ecology", "Forest and Wildlife", 0],
+      ["Environment & Ecology", "NATIONAL PARKS", 0],
+      ["Environment & Ecology", "RAMSAR SITES", 0]
+    ];
+
+    function addDays(dateStr, days) {
+      const d = new Date(dateStr);
+      d.setDate(d.getDate() + days);
+      return d.toISOString().slice(0, 10);
+    }
+
+    function todayISO() {
+      return new Date().toISOString().slice(0, 10);
+    }
+
+    function buildInitialState() {
+      const today = todayISO();
+      const chapters = RAW_SYLLABUS.map((item, i) => ({
+        id: 'ch_' + (i + 1),
+        subject: item[0],
+        title: item[1],
+        readings: item[2],
+        lastRead: item[2] > 0 ? today : null,
+        nextDue: item[2] > 0 ? addDays(today, 1) : null
+      }));
+      return {
+        mode: 'general',
+        globalCurve: 'standard',
+        subjectCurves: {},
+        templates: JSON.parse(JSON.stringify(DEFAULT_TEMPLATES)),
+        chapters,
+        updatedAt: Date.now()
+      };
+    }
+
+    let state = (() => {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (parsed && Array.isArray(parsed.chapters) && parsed.chapters.length === 148) {
+            return parsed;
+          }
+        }
+      } catch (e) {}
+      return buildInitialState();
+    })();
+
+    let expandedSubjects = new Set(['World Geography']);
+    let cloudSaveHook = null;
+
+    function saveState() {
+      state.updatedAt = Date.now();
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      } catch (e) {}
+      if (typeof cloudSaveHook === 'function') cloudSaveHook(state);
+      renderAll();
+    }
+
+    function getCurveForSubject(subject) {
+      const key = state.mode === 'subject' && state.subjectCurves[subject]
+        ? state.subjectCurves[subject]
+        : state.globalCurve;
+      return state.templates[key] || state.templates.standard;
+    }
+
+    function toggleReading(chId, stepIdx) {
+      const ch = state.chapters.find(c => c.id === chId);
+      if (!ch) return;
+      const target = stepIdx + 1;
+      ch.readings = ch.readings === target ? stepIdx : target;
+      const today = todayISO();
+      if (ch.readings === 0) {
+        ch.lastRead = null;
+        ch.nextDue = null;
+      } else {
+        ch.lastRead = today;
+        const curve = getCurveForSubject(ch.subject);
+        const interval = curve.days[Math.min(ch.readings - 1, curve.days.length - 1)] || 1;
+        ch.nextDue = addDays(today, interval);
+      }
+      saveState();
+    }
+
+    function renderAll() {
+      const today = todayISO();
+      let started = 0, passes = 0, dueCount = 0;
+      const scheduled = [];
+
+      state.chapters.forEach(ch => {
+        if (ch.readings > 0) {
+          started++;
+          passes += ch.readings;
+          if (ch.nextDue) {
+            if (ch.nextDue <= today) dueCount++;
+            scheduled.push(ch);
+          }
+        }
+      });
+
+      document.getElementById('kpiStarted').innerHTML = `<span>${started}</span> / 148`;
+      document.getElementById('kpiStartedPct').textContent = `${((started / 148) * 100).toFixed(1)}% first reading logged`;
+      document.getElementById('kpiPasses').innerHTML = `<span>${passes}</span> / 1,332`;
+      document.getElementById('kpiDue').innerHTML = `<span>${dueCount}</span>`;
+      document.getElementById('kpiMode').innerHTML = state.mode === 'general'
+        ? `<span>General</span> Revise`
+        : `<span>Subject</span> Specific`;
+      const activeTpl = state.templates[state.globalCurve] || state.templates.standard;
+      document.getElementById('kpiCurveLabel').textContent = activeTpl.name;
+
+      // Mode buttons & curve selector
+      document.getElementById('modeGeneral').classList.toggle('active', state.mode === 'general');
+      document.getElementById('modeSubject').classList.toggle('active', state.mode === 'subject');
+
+      const sel = document.getElementById('globalCurveSelect');
+      sel.innerHTML = Object.entries(state.templates)
+        .map(([k, v]) => `<option value="${k}" ${k === state.globalCurve ? 'selected' : ''}>${v.name}</option>`)
+        .join('');
+
+      // Upcoming Queue
+      scheduled.sort((a, b) => (a.nextDue || '').localeCompare(b.nextDue || ''));
+      document.getElementById('queueCount').textContent = `${scheduled.length} scheduled`;
+      const qList = document.getElementById('queueList');
+      if (!scheduled.length) {
+        qList.innerHTML = `<div class="kpi-sub">Click R1 on any chapter below to start its spaced repetition schedule.</div>`;
+      } else {
+        qList.innerHTML = scheduled.slice(0, 12).map(ch => {
+          const isDue = ch.nextDue <= today;
+          return `<div class="queue-item">
+            <div>
+              <strong>${ch.title}</strong>
+              <div class="kpi-sub">${ch.subject} • Pass R${ch.readings}/9</div>
+            </div>
+            <span class="badge ${isDue ? 'due' : ''}">${isDue ? 'Due ' + ch.nextDue : ch.nextDue}</span>
+          </div>`;
+        }).join('');
+      }
+
+      // 7-Day Forecast
+      const fBars = document.getElementById('forecastBars');
+      const days = Array.from({ length: 7 }, (_, i) => addDays(today, i));
+      const counts = days.map(d => scheduled.filter(ch => ch.nextDue === d).length);
+      const maxC = Math.max(...counts, 1);
+      fBars.innerHTML = days.map((d, idx) => {
+        const pct = Math.round((counts[idx] / maxC) * 100);
+        return `<div class="f-col">
+          <span class="f-lbl">${counts[idx]}</span>
+          <div class="f-bar" style="height:${Math.max(pct, 6)}%"></div>
+          <span class="f-lbl">${d.slice(5)}</span>
+        </div>`;
+      }).join('');
+
+      // Subject Accordions
+      const query = document.getElementById('searchInput').value.trim().toLowerCase();
+      const subjects = [...new Set(RAW_SYLLABUS.map(r => r[0]))];
+      const container = document.getElementById('syllabusContainer');
+
+      container.innerHTML = subjects.map(subj => {
+        const allCh = state.chapters.filter(c => c.subject === subj);
+        const filtered = query
+          ? allCh.filter(c => c.title.toLowerCase().includes(query) || subj.toLowerCase().includes(query))
+          : allCh;
+        if (query && !filtered.length) return '';
+
+        const doneCount = allCh.filter(c => c.readings > 0).length;
+        const pct = Math.round((doneCount / allCh.length) * 100);
+        const isOpen = query ? true : expandedSubjects.has(subj);
+        const subjCurveKey = state.subjectCurves[subj] || state.globalCurve;
+
+        const curveDropdown = state.mode === 'subject'
+          ? `<select class="curve-select" data-subj-curve="${subj}" onclick="event.stopPropagation()">
+              ${Object.entries(state.templates).map(([k, v]) => `<option value="${k}" ${k === subjCurveKey ? 'selected' : ''}>${v.name.split(' (')[0]}</option>`).join('')}
+            </select>`
+          : '';
+
+        const chaptersHtml = isOpen
+          ? `<div class="chapter-list">
+              ${filtered.map(ch => `
+                <div class="chapter-row">
+                  <div>
+                    <div class="ch-title">${ch.title}</div>
+                    <div class="ch-sub">${ch.readings > 0 ? `Completed ${ch.readings}/9 • Next review: ${ch.nextDue}` : 'Not started yet'}</div>
+                  </div>
+                  <div class="pills">
+                    ${Array.from({ length: 9 }, (_, i) => `
+                      <button class="r-pill ${i < ch.readings ? 'done' : ''}" data-ch="${ch.id}" data-step="${i}">R${i + 1}</button>
+                    `).join('')}
+                  </div>
+                </div>
+              `).join('')}
+            </div>`
+          : '';
+
+        return `<div class="subject-card">
+          <div class="subject-head" data-toggle-subj="${subj}">
+            <div class="subj-meta">
+              <span class="subj-name">${subj}</span>
+              <span class="pillar-tag">${PILLAR_MAP[subj] || 'General Studies'}</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px">
+              ${curveDropdown}
+              <div class="prog-wrap">
+                <div class="prog-track"><div class="prog-fill" style="width:${pct}%"></div></div>
+                <span class="kpi-sub">${doneCount}/${allCh.length}</span>
+              </div>
+            </div>
+          </div>
+          ${chaptersHtml}
+        </div>`;
+      }).join('');
+    }
+
+    // Event Delegation
+    document.body.addEventListener('click', e => {
+      const pill = e.target.closest('.r-pill');
+      if (pill) {
+        toggleReading(pill.dataset.ch, Number(pill.dataset.step));
+        return;
+      }
+      const head = e.target.closest('[data-toggle-subj]');
+      if (head && !e.target.closest('select')) {
+        const s = head.dataset.toggleSubj;
+        if (expandedSubjects.has(s)) expandedSubjects.delete(s);
+        else expandedSubjects.add(s);
+        renderAll();
+        return;
+      }
+      const closeBtn = e.target.closest('[data-close]');
+      if (closeBtn) {
+        document.getElementById(closeBtn.dataset.close).classList.remove('open');
+      }
+    });
+
+    document.body.addEventListener('change', e => {
+      if (e.target.matches('[data-subj-curve]')) {
+        state.subjectCurves[e.target.dataset.subjCurve] = e.target.value;
+        saveState();
+      }
+    });
+
+    document.getElementById('modeGeneral').onclick = () => { state.mode = 'general'; saveState(); };
+    document.getElementById('modeSubject').onclick = () => { state.mode = 'subject'; saveState(); };
+    document.getElementById('globalCurveSelect').onchange = e => { state.globalCurve = e.target.value; saveState(); };
+    document.getElementById('searchInput').oninput = () => renderAll();
+
+    // Theme Toggle
+    function applyTheme(t) {
+      if (t === 'light') document.documentElement.setAttribute('data-theme', 'light');
+      else document.documentElement.removeAttribute('data-theme');
+      localStorage.setItem(THEME_KEY, t);
+    }
+    applyTheme(localStorage.getItem(THEME_KEY) || 'dark');
+    document.getElementById('btnTheme').onclick = () => {
+      const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+      applyTheme(isLight ? 'dark' : 'light');
+    };
+
+    // Curves Modal
+    document.getElementById('btnCurves').onclick = () => {
+      const defaults = [1, 3, 7, 14, 25, 40, 60, 85, 110];
+      document.getElementById('customDaysInputs').innerHTML = defaults
+        .map((d, i) => `<input type="number" class="num-in" id="cd_${i}" value="${d}" min="1" />`)
+        .join('');
+      const subjects = [...new Set(RAW_SYLLABUS.map(r => r[0]))];
+      document.getElementById('subjectCycleMatrix').innerHTML = `
+        <div class="kpi-label" style="margin:12px 0 8px">Subject-Specific Assignments (Mode 2)</div>
+        ${subjects.map(s => `
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--ros-border)">
+            <span style="font-size:0.84rem">${s}</span>
+            <select class="curve-select" data-subj-curve="${s}">
+              ${Object.entries(state.templates).map(([k, v]) => `<option value="${k}" ${(state.subjectCurves[s] || state.globalCurve) === k ? 'selected' : ''}>${v.name}</option>`).join('')}
+            </select>
+          </div>
+        `).join('')}
+      `;
+      document.getElementById('modalCurves').classList.add('open');
+    };
+
+    document.getElementById('btnSaveCurve').onclick = () => {
+      const name = document.getElementById('customCurveName').value.trim() || 'Custom Curve';
+      const days = Array.from({ length: 9 }, (_, i) => Math.max(1, Number(document.getElementById('cd_' + i).value) || 1));
+      const key = 'custom_' + Date.now();
+      state.templates[key] = { name: `${name} (${days.join('-')}d)`, days };
+      state.globalCurve = key;
+      saveState();
+      document.getElementById('modalCurves').classList.remove('open');
+    };
+
+    // Mind Map Modal
+    document.getElementById('btnMindMap').onclick = () => {
+      const subjects = [...new Set(RAW_SYLLABUS.map(r => r[0]))];
+      document.getElementById('mindMapGrid').innerHTML = subjects.map(s => {
+        const chs = state.chapters.filter(c => c.subject === s);
+        const started = chs.filter(c => c.readings > 0).length;
+        return `<div class="mm-node ${started > 0 ? 'active' : ''}">
+          <div class="pillar-tag" style="display:inline-block;margin-bottom:6px">${PILLAR_MAP[s]}</div>
+          <div style="font-weight:700;font-size:0.95rem">${s}</div>
+          <div class="kpi-sub" style="margin-top:4px">${started} / ${chs.length} chapters initiated</div>
+          <div class="mm-link">${LINKAGES[s] || ''}</div>
+        </div>`;
+      }).join('');
+      document.getElementById('modalMindMap').classList.add('open');
+    };
+
+    // Export JSON
+    document.getElementById('btnExport').onclick = () => {
+      const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `revision-os-backup-${todayISO()}.json`;
+      a.click();
+    };
+
+    // Expose bridge for Firebase module
+    window.__reviseOS = {
+      getState: () => state,
+      applyRemoteState: remote => {
+        if (remote && Array.isArray(remote.chapters) && remote.chapters.length === 148) {
+          if ((remote.updatedAt || 0) >= (state.updatedAt || 0)) {
+            state = remote;
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+            renderAll();
+          }
+        }
+      },
+      setCloudHook: fn => { cloudSaveHook = fn; }
+    };
+
+    renderAll();
+  </script>
+
+  <!-- Firebase Auth & Firestore Sync (Non-Blocking ES Module) -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCDTwS6ERSkv-rulWXw23TQINod8-GGLeg",
+      authDomain: "revision-tracker-58d49.firebaseapp.com",
+      projectId: "revision-tracker-58d49",
+      storageBucket: "revision-tracker-58d49.firebasestorage.app",
+      messagingSenderId: "983030745005",
+      appId: "1:983030745005:web:6126dec53dd86f666c4324",
+      measurementId: "G-36MBV39CKK"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const provider = new GoogleAuthProvider();
+
+    const syncDot = document.getElementById('syncDot');
+    const syncText = document.getElementById('syncText');
+    const authArea = document.getElementById('authArea');
+
+    function setStatus(status, label) {
+      syncDot.className = 'sync-dot ' + status;
+      syncText.textContent = label;
+    }
+
+    async function pushToCloud(uid, data) {
+      try {
+        setStatus('saving', 'Syncing...');
+        const ref = doc(db, 'artifacts', 'reviseos', 'users', uid, 'state', 'main');
+        await setDoc(ref, data, { merge: true });
+        setStatus('online', 'Synced to Cloud');
+      } catch (err) {
+        console.error('Cloud save failed:', err);
+        setStatus('', 'Offline / Local');
+      }
+    }
+
+    async function pullFromCloud(uid) {
+      try {
+        const ref = doc(db, 'artifacts', 'reviseos', 'users', uid, 'state', 'main');
+        const snap = await getDoc(ref);
+        if (snap.exists()) {
+          window.__reviseOS.applyRemoteState(snap.data());
+        } else {
+          await pushToCloud(uid, window.__reviseOS.getState());
+        }
+        setStatus('online', 'Synced to Cloud');
+      } catch (err) {
+        console.error('Cloud fetch failed:', err);
+        setStatus('', 'Sync Error');
+      }
+    }
+
+    onAuthStateChanged(auth, async user => {
+      if (user) {
+        authArea.innerHTML = `
+          <div style="display:inline-flex;align-items:center;gap:8px">
+            ${user.photoURL ? `<img class="avatar" src="${user.photoURL}" alt=""/>` : ''}
+            <span style="font-size:0.8rem;font-weight:600">${user.displayName || user.email}</span>
+            <button class="btn" id="btnSignOut">Sign out</button>
+          </div>
+        `;
+        document.getElementById('btnSignOut').onclick = () => signOut(auth);
+        window.__reviseOS.setCloudHook(data => pushToCloud(user.uid, data));
+        await pullFromCloud(user.uid);
+      } else {
+        window.__reviseOS.setCloudHook(null);
+        setStatus('', 'Local Storage');
+        authArea.innerHTML = `<button class="btn btn-accent" id="btnSignIn">Sign in with Google</button>`;
+        document.getElementById('btnSignIn').onclick = () => signInWithPopup(auth, provider);
+      }
+    });
+  </script>
+</body>
+</html>
