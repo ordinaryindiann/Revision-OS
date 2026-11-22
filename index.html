@@ -874,6 +874,7 @@
 
         <div class="inline-add">
           <input type="text" class="text-input" id="wsNewChapterTitle" style="flex:1" placeholder="Add a new chapter to this subject..." />
+          <input type="date" class="curve-select" id="wsNewChapterDate" title="Optional: schedule its first study date" style="min-width:145px" />
           <select class="curve-select" id="wsNewChapterPrio" style="min-width:130px">
             <option value="Moderate">Moderate</option>
             <option value="High">High</option>
@@ -970,7 +971,13 @@
         <button class="btn" data-close="modalCurves">Close</button>
       </div>
       <p class="kpi-sub" style="margin-bottom:12px">Customize your 9-step day intervals (R1 to R9) or assign distinct curves per subject when Mode 2 is active.</p>
-      <div style="margin-bottom:14px">
+      <div class="curve-explain" style="border:1px solid var(--ros-border);border-radius:12px;padding:12px;margin:10px 0 16px;line-height:1.5">
+        <strong>How the cycles work</strong><p class="kpi-sub">Each revision interval is measured from the last completed revision. Short gaps reinforce fresh material; longer gaps test durable recall.</p>
+        <div class="kpi-sub"><b>Standard Spaced:</b> Balanced reinforcement for steady preparation — 1, 3, 7, 14, 30, 45, 60, 90, 120 days.</div>
+        <div class="kpi-sub" style="margin-top:7px"><b>Intensive Sprint:</b> Shorter gaps for high-priority topics or exam-season consolidation — 1, 2, 4, 7, 12, 20, 30, 45, 60 days.</div>
+        <div class="kpi-sub" style="margin-top:7px"><b>Long-Term Retention:</b> Wider intervals for material you already recall reasonably well — 2, 5, 12, 25, 45, 75, 110, 150, 180 days.</div>
+        <div class="kpi-sub" style="margin-top:7px"><b>R1–R9:</b> Nine planned passes. Mark a pass only after completing recall/review; the next due date is calculated from the chosen curve.</div></div>
+<div style="margin-bottom:14px">
         <label class="kpi-label">Create Custom Curve</label>
         <input type="text" id="customCurveName" class="text-input" style="width:100%;margin-top:6px" placeholder="Template name (e.g., Intensive Prelims 45-Day)" />
         <div class="input-row" id="customDaysInputs"></div>
@@ -1523,6 +1530,7 @@
               <button class="btn btn-sm" data-ch-more aria-label="Chapter options">⋯</button>
               <div class="ch-more-menu">
                 <button data-rename-ch="${ch.id}">✎ Rename Chapter</button>
+                <button data-schedule-ch="${ch.id}">📅 Set / Change Date</button>
                 <button data-delete-ch="${ch.id}" class="danger">Delete Chapter</button>
               </div>
             </div>
@@ -1540,7 +1548,7 @@
       document.getElementById('calendarMonthLabel').textContent=calendarCursor.toLocaleDateString('en-IN',{month:'long',year:'numeric'});
       const first=new Date(year,month,1), startOffset=first.getDay();
       const start=new Date(year,month,1-startOffset); const today=todayISO();
-      const scheduled=state.chapters.filter(ch=>ch.readings>0&&ch.nextDue);
+      const scheduled=state.chapters.filter(ch=>ch.nextDue);
       const byDate={}; scheduled.forEach(ch=>(byDate[ch.nextDue] ||= []).push(ch));
       const weekdays=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
       let html=weekdays.map(d=>`<div class="calendar-weekday">${d}</div>`).join('');
@@ -1553,10 +1561,10 @@
       showCalendarDay(selectedCalendarDay,byDate);
     }
     function showCalendarDay(iso,provided) {
-      selectedCalendarDay=iso; const entries=(provided||Object.fromEntries(state.chapters.filter(ch=>ch.readings>0&&ch.nextDue).map(ch=>[ch.nextDue,[]])))[iso] || state.chapters.filter(ch=>ch.readings>0&&ch.nextDue===iso);
+      selectedCalendarDay=iso; const entries=(provided||Object.fromEntries(state.chapters.filter(ch=>ch.nextDue).map(ch=>[ch.nextDue,[]])))[iso] || state.chapters.filter(ch=>ch.nextDue===iso);
       const detail=document.getElementById('calendarDayDetail'); if(!detail)return;
       const chapters=Array.isArray(entries)?entries:[];
-      detail.innerHTML=`<strong>📅 ${dateLabel(iso,{weekday:'long',day:'numeric',month:'long',year:'numeric'})}</strong> · ${chapters.length} revision${chapters.length===1?'':'s'}${chapters.length?'<div style="margin-top:8px">'+chapters.map(ch=>`<div style="padding:5px 0;border-bottom:1px solid var(--ros-border)"><b>${escapeHtml(ch.title)}</b><span class="kpi-sub"> · ${escapeHtml(ch.subject)} · R${ch.readings+1}</span></div>`).join('')+'</div>':'<div class="kpi-sub" style="margin-top:6px">No revisions scheduled for this date.</div>'}`;
+      detail.innerHTML=`<strong>📅 ${dateLabel(iso,{weekday:'long',day:'numeric',month:'long',year:'numeric'})}</strong> · ${chapters.length} revision${chapters.length===1?'':'s'}${chapters.length?'<div style="margin-top:8px">'+chapters.map(ch=>`<div style="padding:5px 0;border-bottom:1px solid var(--ros-border)"><b>${escapeHtml(ch.title)}</b><span class="kpi-sub"> · ${escapeHtml(ch.subject)} · ${ch.readings ? 'R'+(ch.readings+1) : 'Planned / First Study'}</span></div>`).join('')+'</div>':'<div class="kpi-sub" style="margin-top:6px">No revisions scheduled for this date.</div>'}`;
     }
     const calendarCollapsed = localStorage.getItem('ros_calendar_collapsed') !== 'false';
     const calendarSection = document.getElementById('revisionCalendarSection');
@@ -1573,7 +1581,7 @@
     document.getElementById('calendarPrev').onclick=()=>{calendarCursor.setMonth(calendarCursor.getMonth()-1);renderCalendar();};
     document.getElementById('calendarNext').onclick=()=>{calendarCursor.setMonth(calendarCursor.getMonth()+1);renderCalendar();};
     document.getElementById('calendarToday').onclick=()=>{calendarCursor=new Date();calendarCursor.setDate(1);selectedCalendarDay=todayISO();renderCalendar();};
-    document.getElementById('calendarGrid').addEventListener('click',e=>{const cell=e.target.closest('[data-calendar-day]');if(!cell)return;const iso=cell.dataset.calendarDay;const [y,m,d]=iso.split('-').map(Number);const first=new Date(y,m,1),start=new Date(y,m,1-first.getDay());const scheduled=state.chapters.filter(ch=>ch.readings>0&&ch.nextDue);const byDate={};scheduled.forEach(ch=>(byDate[ch.nextDue] ||= []).push(ch));showCalendarDay(iso,byDate);document.querySelectorAll('[data-calendar-day].selected').forEach(n=>n.classList.remove('selected'));cell.classList.add('selected');});
+    document.getElementById('calendarGrid').addEventListener('click',e=>{const cell=e.target.closest('[data-calendar-day]');if(!cell)return;const iso=cell.dataset.calendarDay;const [y,m,d]=iso.split('-').map(Number);const first=new Date(y,m,1),start=new Date(y,m,1-first.getDay());const scheduled=state.chapters.filter(ch=>ch.nextDue);const byDate={};scheduled.forEach(ch=>(byDate[ch.nextDue] ||= []).push(ch));showCalendarDay(iso,byDate);document.querySelectorAll('[data-calendar-day].selected').forEach(n=>n.classList.remove('selected'));cell.classList.add('selected');});
 
     function renderAll() {
       const today = todayISO();
@@ -1818,6 +1826,15 @@
         if (newTitle && newTitle.trim() && newTitle.trim() !== ch.title) { captureUndo('chapter rename'); ch.title = newTitle.trim(); saveState(); }
         return;
       }
+      const scheduleChBtn = e.target.closest('[data-schedule-ch]');
+      if (scheduleChBtn) {
+        const ch = state.chapters.find(c => c.id === scheduleChBtn.dataset.scheduleCh);
+        if (!ch) return;
+        const date = prompt('Set scheduled date (YYYY-MM-DD). Leave blank to clear:', ch.nextDue || '');
+        if (date === null) return;
+        if (date.trim() && !/^\d{4}-\d{2}-\d{2}$/.test(date.trim())) { alert('Please enter the date as YYYY-MM-DD.'); return; }
+        captureUndo('schedule date change'); ch.nextDue = date.trim() || null; saveState(); return;
+      }
       const delCh = e.target.closest('[data-delete-ch]');
       if (delCh) {
         const ch = state.chapters.find(c => c.id === delCh.dataset.deleteCh);
@@ -1911,9 +1928,10 @@
         confidence: 0,
         priority: prio,
         lastRead: null,
-        nextDue: null
+        nextDue: document.getElementById('wsNewChapterDate').value || null
       });
       document.getElementById('wsNewChapterTitle').value = '';
+      document.getElementById('wsNewChapterDate').value = '';
       saveState();
     };
 
