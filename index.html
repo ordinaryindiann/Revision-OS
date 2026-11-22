@@ -193,6 +193,28 @@
     .f-bar { width: 100%; max-width: 30px; background: var(--ros-accent); border-radius: 6px 6px 2px 2px; min-height: 4px; transition: height 0.25s; }
     .f-lbl { font-size: 0.69rem; color: var(--ros-text-muted); font-weight: 600; }
 
+
+    /* Revision calendar */
+    .schedule-calendar { margin:0 0 20px; background:var(--ros-surface); border:1px solid var(--ros-border); border-radius:var(--ros-radius-md); padding:16px; }
+    .calendar-head { display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:12px; }
+    .calendar-nav { display:flex; align-items:center; gap:8px; }
+    .calendar-month-label { min-width:150px; text-align:center; font-weight:800; font-size:1rem; }
+    .calendar-grid { display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:6px; }
+    .calendar-weekday { text-align:center; padding:6px 2px; font-size:.68rem; text-transform:uppercase; letter-spacing:.06em; color:var(--ros-text-muted); font-weight:700; }
+    .calendar-day { min-height:108px; padding:7px; border:1px solid var(--ros-border); background:var(--ros-bg); border-radius:9px; overflow:hidden; }
+    .calendar-day.outside { opacity:.38; }
+    .calendar-day.today { border-color:var(--ros-accent); box-shadow:inset 0 0 0 1px var(--ros-accent); }
+    .calendar-day.selected { outline:2px solid var(--ros-accent); outline-offset:1px; }
+    .calendar-day.has-revisions { background:var(--ros-surface-raised); }
+    .calendar-day-number { display:flex; justify-content:space-between; align-items:center; font-size:.74rem; font-weight:800; margin-bottom:5px; }
+    .calendar-day-count { font-size:.62rem; color:var(--ros-accent); }
+    .calendar-event { font-size:.64rem; line-height:1.25; padding:3px 5px; margin-top:3px; border-radius:4px; background:rgba(198,243,107,.12); border-left:2px solid var(--ros-accent); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .calendar-event.overdue { background:rgba(239,68,68,.12); border-left-color:#EF4444; }
+    .calendar-empty { font-size:.62rem; color:var(--ros-text-muted); margin-top:8px; }
+    .calendar-detail { margin-top:12px; padding:10px 12px; border-radius:9px; background:var(--ros-surface-raised); border:1px solid var(--ros-border); min-height:40px; font-size:.78rem; }
+    @media(max-width:700px){ .calendar-day{min-height:78px;padding:5px;} .calendar-event{font-size:.58rem;} .calendar-grid{gap:3px;} }
+    @media(max-width:460px){ .calendar-day{min-height:62px;} .calendar-event{display:none;} .calendar-day-count{display:inline;} }
+
     /* Controls Toolbar */
     .toolbar {
       display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
@@ -540,6 +562,17 @@
         </div>
         <div class="forecast-bars" id="forecastBars"></div>
       </div>
+    </section>
+
+
+    <!-- Monthly Revision Calendar -->
+    <section class="schedule-calendar" id="revisionCalendarSection">
+      <div class="calendar-head">
+        <div><div class="section-title" style="margin-bottom:3px">Revision Calendar</div><div class="kpi-sub">See exactly what is scheduled on each date. Select a day for its full revision list.</div></div>
+        <div class="calendar-nav"><button class="btn btn-sm" id="calendarPrev">←</button><div class="calendar-month-label" id="calendarMonthLabel">Month YYYY</div><button class="btn btn-sm" id="calendarNext">→</button><button class="btn btn-sm" id="calendarToday">Today</button></div>
+      </div>
+      <div class="calendar-grid" id="calendarGrid"></div>
+      <div class="calendar-detail" id="calendarDayDetail">Select a date to see the scheduled chapters.</div>
     </section>
 
     <!-- Controls Toolbar -->
@@ -1188,6 +1221,38 @@
       }).join('');
     }
 
+    function escapeHtml(value){return String(value??'').replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c]));}
+    let calendarCursor = new Date(); calendarCursor.setDate(1); let selectedCalendarDay = todayISO();
+    function dateLabel(iso, options={day:'numeric',month:'short',year:'numeric'}) { if(!iso) return '—'; const [y,m,d]=iso.split('-').map(Number); return new Date(y,m-1,d).toLocaleDateString('en-IN',options); }
+    function renderCalendar() {
+      const grid=document.getElementById('calendarGrid'); if(!grid) return;
+      const year=calendarCursor.getFullYear(), month=calendarCursor.getMonth();
+      document.getElementById('calendarMonthLabel').textContent=calendarCursor.toLocaleDateString('en-IN',{month:'long',year:'numeric'});
+      const first=new Date(year,month,1), startOffset=first.getDay();
+      const start=new Date(year,month,1-startOffset); const today=todayISO();
+      const scheduled=state.chapters.filter(ch=>ch.readings>0&&ch.nextDue);
+      const byDate={}; scheduled.forEach(ch=>(byDate[ch.nextDue] ||= []).push(ch));
+      const weekdays=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+      let html=weekdays.map(d=>`<div class="calendar-weekday">${d}</div>`).join('');
+      for(let i=0;i<42;i++) { const dt=new Date(start); dt.setDate(start.getDate()+i); const iso=`${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}`; const entries=byDate[iso]||[];
+        const classes=['calendar-day',dt.getMonth()!==month?'outside':'',iso===today?'today':'',iso===selectedCalendarDay?'selected':'',entries.length?'has-revisions':''].filter(Boolean).join(' ');
+        const items=entries.slice(0,3).map(ch=>`<div class="calendar-event ${iso<today?'overdue':''}" title="${escapeHtml(ch.subject)} — ${escapeHtml(ch.title)}">${escapeHtml(ch.title)}</div>`).join('');
+        html+=`<div class="${classes}" data-calendar-day="${iso}"><div class="calendar-day-number"><span>${dt.getDate()}</span>${entries.length?`<span class="calendar-day-count">${entries.length} 📚</span>`:''}</div>${items}${entries.length>3?`<div class="calendar-empty">+${entries.length-3} more</div>`:''}</div>`;
+      }
+      grid.innerHTML=html;
+      showCalendarDay(selectedCalendarDay,byDate);
+    }
+    function showCalendarDay(iso,provided) {
+      selectedCalendarDay=iso; const entries=(provided||Object.fromEntries(state.chapters.filter(ch=>ch.readings>0&&ch.nextDue).map(ch=>[ch.nextDue,[]])))[iso] || state.chapters.filter(ch=>ch.readings>0&&ch.nextDue===iso);
+      const detail=document.getElementById('calendarDayDetail'); if(!detail)return;
+      const chapters=Array.isArray(entries)?entries:[];
+      detail.innerHTML=`<strong>📅 ${dateLabel(iso,{weekday:'long',day:'numeric',month:'long',year:'numeric'})}</strong> · ${chapters.length} revision${chapters.length===1?'':'s'}${chapters.length?'<div style="margin-top:8px">'+chapters.map(ch=>`<div style="padding:5px 0;border-bottom:1px solid var(--ros-border)"><b>${escapeHtml(ch.title)}</b><span class="kpi-sub"> · ${escapeHtml(ch.subject)} · R${ch.readings+1}</span></div>`).join('')+'</div>':'<div class="kpi-sub" style="margin-top:6px">No revisions scheduled for this date.</div>'}`;
+    }
+    document.getElementById('calendarPrev').onclick=()=>{calendarCursor.setMonth(calendarCursor.getMonth()-1);renderCalendar();};
+    document.getElementById('calendarNext').onclick=()=>{calendarCursor.setMonth(calendarCursor.getMonth()+1);renderCalendar();};
+    document.getElementById('calendarToday').onclick=()=>{calendarCursor=new Date();calendarCursor.setDate(1);selectedCalendarDay=todayISO();renderCalendar();};
+    document.getElementById('calendarGrid').addEventListener('click',e=>{const cell=e.target.closest('[data-calendar-day]');if(!cell)return;const iso=cell.dataset.calendarDay;const [y,m,d]=iso.split('-').map(Number);const first=new Date(y,m,1),start=new Date(y,m,1-first.getDay());const scheduled=state.chapters.filter(ch=>ch.readings>0&&ch.nextDue);const byDate={};scheduled.forEach(ch=>(byDate[ch.nextDue] ||= []).push(ch));showCalendarDay(iso,byDate);document.querySelectorAll('[data-calendar-day].selected').forEach(n=>n.classList.remove('selected'));cell.classList.add('selected');});
+
     function renderAll() {
       const today = todayISO();
       const totalChapters = state.chapters.length;
@@ -1257,7 +1322,7 @@
               <div class="kpi-sub">${ch.subject} • Pass R${ch.readings}/9</div>
             </div>
             <div style="display:flex;align-items:center;gap:6px">
-              <span class="badge ${isDue ? 'due' : ''}">${isDue ? 'Due ' + ch.nextDue : ch.nextDue}</span>
+              <span class="badge ${isDue ? 'due' : ''}">${isDue ? 'OVERDUE · ' + dateLabel(ch.nextDue) : dateLabel(ch.nextDue)}</span>
               ${ch.readings < 9 ? `<button class="btn btn-sm btn-accent" data-ch="${ch.id}" data-step="${ch.readings}">+R${ch.readings + 1}</button>` : ''}
             </div>
           </div>`;
@@ -1296,6 +1361,8 @@
           <span class="f-lbl">${d.slice(5)}</span>
         </div>`;
       }).join('');
+
+      renderCalendar();
 
       // Subject Tiles Grouped by Pillar
       const query = document.getElementById('searchInput').value.trim().toLowerCase();
