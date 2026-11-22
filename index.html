@@ -1690,6 +1690,7 @@
               <div class="ch-more-menu">
                 <button data-rename-ch="${ch.id}">✎ Rename Chapter</button>
                 <button data-schedule-ch="${ch.id}">📅 Set / Change Date</button>
+                <button data-edit-pass-date="${ch.id}">🗓 Edit R1 date</button>
                 <button data-delete-ch="${ch.id}" class="danger">Delete Chapter</button>
               </div>
             </div>
@@ -2029,6 +2030,12 @@
       if (tile) {
         openSubjectWorkspace(tile.dataset.openTile);
         return;
+      }
+      const editPassDate = e.target.closest('[data-edit-pass-date]');
+      if (editPassDate) {
+        const ch = state.chapters.find(c=>c.id===editPassDate.dataset.editPassDate); if(!ch) return;
+        const rec = (ch.history||[]).find(h=>h.pass===1); if(!rec) { showToast('First reading date record not found'); return; }
+        openRosDate(rec.date,(date)=>{ if(!date) return; captureUndo('first reading date change'); rec.date=date; if(ch.readings===1){ch.lastRead=date;ch.nextDue=scheduleFrom(ch,date,1);} saveState(); },'Change first reading date'); return;
       }
       const pill = e.target.closest('[data-ch][data-step]');
       if (pill) {
