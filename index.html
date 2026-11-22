@@ -208,6 +208,11 @@
     @keyframes rosModalIn { from { opacity:0; transform:translateY(10px) scale(.985); } to { opacity:1; transform:translateY(0) scale(1); } }
     @media(prefers-reduced-motion:reduce){ *,*::before,*::after { animation:none!important; transition:none!important; scroll-behavior:auto!important; } }
     .calendar-collapse-btn { white-space:nowrap; }
+    .queue-item[data-open-chapter], .calendar-event[data-open-chapter], .calendar-detail-chapter { cursor:pointer; }
+    .queue-item[data-open-chapter]:hover, .calendar-detail-chapter:hover { background:var(--ros-surface-raised); }
+    .chapter-focus-flash { animation: rosChapterFocus 1.8s ease-out; }
+    @keyframes rosChapterFocus { 0%,25% { box-shadow:0 0 0 3px var(--ros-accent); background:rgba(198,243,107,.16); } 100% { box-shadow:none; background:transparent; } }
+    #rebalanceOverdueBtn { white-space:nowrap; }
     .calendar-content { overflow:hidden; max-height:1800px; opacity:1; transition:max-height .35s var(--ros-ease),opacity .25s var(--ros-ease),margin .25s var(--ros-ease); }
     .schedule-calendar.collapsed .calendar-content { max-height:0; opacity:0; margin:0; pointer-events:none; }
     .schedule-calendar.collapsed { padding-bottom:12px; }
@@ -825,7 +830,7 @@
     <section class="schedule-calendar" id="revisionCalendarSection">
       <div class="calendar-head">
         <div><div class="section-title" style="margin-bottom:3px">Revision Calendar</div><div class="kpi-sub">See exactly what is scheduled on each date. Select a day for its full revision list.</div></div>
-        <div class="calendar-nav"><button class="btn btn-sm" id="calendarPrev">←</button><div class="calendar-month-label" id="calendarMonthLabel">Month YYYY</div><button class="btn btn-sm" id="calendarNext">→</button><button class="btn btn-sm" id="calendarToday">Today</button><button class="btn btn-sm calendar-collapse-btn" id="calendarToggle" aria-expanded="false">Show calendar ▾</button></div>
+        <div class="calendar-nav"><button class="btn btn-sm" id="calendarPrev">←</button><div class="calendar-month-label" id="calendarMonthLabel">Month YYYY</div><button class="btn btn-sm" id="calendarNext">→</button><button class="btn btn-sm" id="calendarToday">Today</button><button class="btn btn-sm" id="rebalanceOverdueBtn">Balance overdue</button><button class="btn btn-sm calendar-collapse-btn" id="calendarToggle" aria-expanded="false">Show calendar ▾</button></div>
       </div>
       <div class="calendar-content" id="calendarContent"><div class="calendar-grid" id="calendarGrid"></div>
       <div class="calendar-detail" id="calendarDayDetail">Select a date to see the scheduled chapters.</div></div>
@@ -1609,7 +1614,7 @@
         const pills = Array.from({ length: 9 }, (_, i) =>
           `<button class="r-pill ${i < ch.readings ? 'done' : ''} ${i === ch.readings ? 'next' : ''}" data-ch="${ch.id}" data-step="${i}" title="Revision ${i + 1}${(ch.history||[]).find(h=>h.pass===i+1)?.date ? ' · completed '+dateLabel((ch.history||[]).find(h=>h.pass===i+1).date) : ''}">R${i + 1}</button>`).join('');
 
-        return `<div class="ws-ch p-${prio.toLowerCase()} s-${status.cls}">
+        return `<div class="ws-ch p-${prio.toLowerCase()} s-${status.cls}" data-chapter-row="${ch.id}">
           <div class="ws-ch-main">
             <div class="ws-ch-titleline">
               <span class="ws-ch-title">${escapeHtml(ch.title)}</span>
@@ -1640,6 +1645,15 @@
     function escapeHtml(value){return String(value??'').replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c]));}
     let calendarCursor = new Date(); calendarCursor.setDate(1); let selectedCalendarDay = todayISO();
     function dateLabel(iso, options={day:'numeric',month:'short',year:'numeric'}) { if(!iso) return '—'; const [y,m,d]=iso.split('-').map(Number); return new Date(y,m-1,d).toLocaleDateString('en-IN',options); }
+    function openChapterFromNavigation(chapterId) {
+      const chapter = state.chapters.find(c => String(c.id) === String(chapterId));
+      if (!chapter) return;
+      openSubjectWorkspace(chapter.subject);
+      requestAnimationFrame(() => {
+        const row = document.querySelector(`[data-chapter-row="${CSS.escape(String(chapterId))}"]`);
+        if (row) { row.scrollIntoView({behavior:'smooth',block:'center'}); row.classList.remove('chapter-focus-flash'); void row.offsetWidth; row.classList.add('chapter-focus-flash'); }
+      });
+    }
     function renderCalendar() {
       const grid=document.getElementById('calendarGrid'); if(!grid) return;
       const year=calendarCursor.getFullYear(), month=calendarCursor.getMonth();
@@ -1652,7 +1666,7 @@
       let html=weekdays.map(d=>`<div class="calendar-weekday">${d}</div>`).join('');
       for(let i=0;i<42;i++) { const dt=new Date(start); dt.setDate(start.getDate()+i); const iso=`${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}`; const entries=byDate[iso]||[];
         const classes=['calendar-day',dt.getMonth()!==month?'outside':'',iso===today?'today':'',iso===selectedCalendarDay?'selected':'',entries.length?'has-revisions':''].filter(Boolean).join(' ');
-        const items=entries.slice(0,3).map(ch=>`<div class="calendar-event ${iso<today?'overdue':''}" title="${escapeHtml(ch.subject)} — ${escapeHtml(ch.title)}">${escapeHtml(ch.title)}</div>`).join('');
+        const items=entries.slice(0,3).map(ch=>`<div class="calendar-event ${iso<today?'overdue':''}" data-open-chapter="${ch.id}" title="Open ${escapeHtml(ch.subject)} — ${escapeHtml(ch.title)}">${escapeHtml(ch.title)}</div>`).join('');
         html+=`<div class="${classes}" data-calendar-day="${iso}"><div class="calendar-day-number"><span>${dt.getDate()}</span>${entries.length?`<span class="calendar-day-count">${entries.length} 📚</span>`:''}</div>${items}${entries.length>3?`<div class="calendar-empty">+${entries.length-3} more</div>`:''}</div>`;
       }
       grid.innerHTML=html;
@@ -1662,7 +1676,7 @@
       selectedCalendarDay=iso; const entries=(provided||Object.fromEntries(state.chapters.filter(ch=>ch.nextDue).map(ch=>[ch.nextDue,[]])))[iso] || state.chapters.filter(ch=>ch.nextDue===iso);
       const detail=document.getElementById('calendarDayDetail'); if(!detail)return;
       const chapters=Array.isArray(entries)?entries:[];
-      detail.innerHTML=`<strong>📅 ${dateLabel(iso,{weekday:'long',day:'numeric',month:'long',year:'numeric'})}</strong> · ${chapters.length} revision${chapters.length===1?'':'s'}${chapters.length?'<div style="margin-top:8px">'+chapters.map(ch=>`<div style="padding:5px 0;border-bottom:1px solid var(--ros-border)"><b>${escapeHtml(ch.title)}</b><span class="kpi-sub"> · ${escapeHtml(ch.subject)} · ${ch.readings ? 'R'+(ch.readings+1) : 'Planned / First Study'}</span></div>`).join('')+'</div>':'<div class="kpi-sub" style="margin-top:6px">No revisions scheduled for this date.</div>'}`;
+      detail.innerHTML=`<strong>📅 ${dateLabel(iso,{weekday:'long',day:'numeric',month:'long',year:'numeric'})}</strong> · ${chapters.length} revision${chapters.length===1?'':'s'}${chapters.length?'<div style="margin-top:8px">'+chapters.map(ch=>`<div class="calendar-detail-chapter" data-open-chapter="${ch.id}" style="padding:5px 0;border-bottom:1px solid var(--ros-border)"><b>${escapeHtml(ch.title)}</b><span class="kpi-sub"> · ${escapeHtml(ch.subject)} · ${ch.readings ? 'R'+(ch.readings+1) : 'Planned / First Study'}</span></div>`).join('')+'</div>':'<div class="kpi-sub" style="margin-top:6px">No revisions scheduled for this date.</div>'}`;
     }
     const calendarCollapsed = localStorage.getItem('ros_calendar_collapsed') !== 'false';
     const calendarSection = document.getElementById('revisionCalendarSection');
@@ -1679,7 +1693,25 @@
     document.getElementById('calendarPrev').onclick=()=>{calendarCursor.setMonth(calendarCursor.getMonth()-1);renderCalendar();};
     document.getElementById('calendarNext').onclick=()=>{calendarCursor.setMonth(calendarCursor.getMonth()+1);renderCalendar();};
     document.getElementById('calendarToday').onclick=()=>{calendarCursor=new Date();calendarCursor.setDate(1);selectedCalendarDay=todayISO();renderCalendar();};
-    document.getElementById('calendarGrid').addEventListener('click',e=>{const cell=e.target.closest('[data-calendar-day]');if(!cell)return;const iso=cell.dataset.calendarDay;const [y,m,d]=iso.split('-').map(Number);const first=new Date(y,m,1),start=new Date(y,m,1-first.getDay());const scheduled=state.chapters.filter(ch=>ch.nextDue);const byDate={};scheduled.forEach(ch=>(byDate[ch.nextDue] ||= []).push(ch));showCalendarDay(iso,byDate);document.querySelectorAll('[data-calendar-day].selected').forEach(n=>n.classList.remove('selected'));cell.classList.add('selected');});
+    document.getElementById('calendarGrid').addEventListener('click',e=>{const chapterHit=e.target.closest('[data-open-chapter]');if(chapterHit){openChapterFromNavigation(chapterHit.dataset.openChapter);return;}const cell=e.target.closest('[data-calendar-day]');if(!cell)return;const iso=cell.dataset.calendarDay;const [y,m,d]=iso.split('-').map(Number);const first=new Date(y,m,1),start=new Date(y,m,1-first.getDay());const scheduled=state.chapters.filter(ch=>ch.nextDue);const byDate={};scheduled.forEach(ch=>(byDate[ch.nextDue] ||= []).push(ch));showCalendarDay(iso,byDate);document.querySelectorAll('[data-calendar-day].selected').forEach(n=>n.classList.remove('selected'));cell.classList.add('selected');});
+
+
+    document.getElementById('rebalanceOverdueBtn').onclick = () => {
+      const today = todayISO();
+      const overdue = state.chapters.filter(ch => ch.nextDue && ch.nextDue < today && ch.readings < 9);
+      if (!overdue.length) { document.getElementById('calendarDayDetail').innerHTML = '<strong>Overdue balance</strong><div class="kpi-sub">No overdue chapters to redistribute.</div>'; return; }
+      captureUndo('overdue redistribution');
+      const priorityRank = {Critical:0, High:1, Moderate:2};
+      overdue.sort((a,b) => (priorityRank[a.priority||'Moderate']-priorityRank[b.priority||'Moderate']) || (Number(b.confidence||0)-Number(a.confidence||0)) || (a.nextDue||'').localeCompare(b.nextDue||''));
+      overdue.forEach((ch,idx) => {
+        // High-priority chapters get the earlier slots; spread the remainder over five days.
+        const dayOffset = Math.min(4, Math.floor(idx * 5 / overdue.length));
+        ch.nextDue = addDays(today, dayOffset);
+      });
+      saveState();
+      selectedCalendarDay = today; calendarCursor = new Date(); calendarCursor.setDate(1); renderCalendar();
+      document.getElementById('calendarDayDetail').innerHTML = `<strong>✓ Overdue workload redistributed</strong><div class="kpi-sub">${overdue.length} chapters spread across the next 5 days, ordered by priority. Use Undo to revert.</div>`;
+    };
 
     function renderAll() {
       const today = todayISO();
@@ -1712,7 +1744,7 @@
         : 'Click "Load My 148 UPSC Syllabus" or import Excel';
 
       // Executive KPIs
-      const uniquePillars = new Set(state.subjects.map(s => state.pillars[s] || inferPillar(s)));
+      const uniquePillars = new Set(state.subjects.map(s => subjectGroup(s)));
       document.getElementById('telemetrySubjects').textContent = `${state.subjects.length} Subjects • ${uniquePillars.size} Categories`;
       document.getElementById('kpiStarted').innerHTML = `<span>${started}</span> / ${totalChapters}`;
       document.getElementById('kpiStartedPct').textContent = totalChapters
@@ -1744,9 +1776,9 @@
       } else {
         qList.innerHTML = scheduled.slice(0, 15).map(ch => {
           const isDue = ch.nextDue <= today;
-          return `<div class="queue-item">
+          return `<div class="queue-item" data-open-chapter="${ch.id}" title="Open chapter workspace">
             <div>
-              <strong>${ch.title}</strong>
+              <strong>${escapeHtml(ch.title)}</strong>
               <div class="kpi-sub">${ch.subject} • Pass R${ch.readings}/9</div>
             </div>
             <div style="display:flex;align-items:center;gap:6px">
@@ -1876,6 +1908,8 @@
 
     // Event Delegation
     document.body.addEventListener('click', e => {
+      const chapterNavigation = e.target.closest('[data-open-chapter]');
+      if (chapterNavigation && !e.target.closest('[data-ch][data-step]')) { openChapterFromNavigation(chapterNavigation.dataset.openChapter); return; }
       const tile = e.target.closest('[data-open-tile]');
       if (tile) {
         openSubjectWorkspace(tile.dataset.openTile);
@@ -1904,7 +1938,7 @@
         document.getElementById('transferChapterLabel').textContent = `${ch.title} (currently in ${ch.subject})`;
         const others = state.subjects.filter(s => s !== ch.subject);
         document.getElementById('transferTargetSubject').innerHTML = others.length
-          ? others.map(s => `<option value="${s}">${s} (${state.pillars[s] || inferPillar(s)})</option>`).join('')
+          ? others.map(s => `<option value="${s}">${s} (${subjectGroup(s)})</option>`).join('')
           : `<option value="">No other subjects available — create one first</option>`;
         document.getElementById('modalTransfer').classList.add('open');
         return;
@@ -2294,7 +2328,7 @@
         const all = chapters.filter(c=>c.subject===subject);
         const matching = all.filter(ch=>{
           const status=mindMapStatus(ch);
-          const text=(subject+' '+ch.title+' '+(state.pillars[subject]||inferPillar(subject))).toLowerCase();
+          const text=(subject+' '+ch.title+' '+(subjectGroup(subject))).toLowerCase();
           if(query && !text.includes(query)) return false;
           if(filter==='needs' && !(status.emoji==='🚨'||ch.priority==='Critical'||ch.priority==='High'||ch.readings<=3)) return false;
           if(filter==='notstarted' && ch.readings!==0) return false;
@@ -2311,7 +2345,7 @@
           const st=mindMapStatus(ch);
           return `<div class="mm-chapter ${st.cls}" title="${escapeMindMapText(st.label)} • ${ch.readings}/9 revisions • ${escapeMindMapText(ch.priority)}"><span class="mm-status">${st.emoji}</span><span class="mm-ch-title">${escapeMindMapText(ch.title)}</span><span class="mm-ch-meta">R${ch.readings}/9</span></div>`;
         }).join('');
-        return `<section class="mm-node mm-subject"><div class="mm-subject-head"><span class="mm-subject-title">📚 ${escapeMindMapText(subject)}</span><span class="badge">${escapeMindMapText(state.pillars[subject]||inferPillar(subject))}</span><span class="mm-subject-meta">${startedCount}/${all.length} started · ${dueCount} overdue</span><button class="btn btn-sm" data-mm-toggle="${escapeMindMapText(subject)}">Collapse</button></div><div class="mm-chapter-branch" data-mm-branch="${escapeMindMapText(subject)}">${chaptersHtml||'<span class="kpi-sub">No chapters match this filter.</span>'}</div></section>`;
+        return `<section class="mm-node mm-subject"><div class="mm-subject-head"><span class="mm-subject-title">📚 ${escapeMindMapText(subject)}</span><span class="badge">${escapeMindMapText(subjectGroup(subject))}</span><span class="mm-subject-meta">${startedCount}/${all.length} started · ${dueCount} overdue</span><button class="btn btn-sm" data-mm-toggle="${escapeMindMapText(subject)}">Collapse</button></div><div class="mm-chapter-branch" data-mm-branch="${escapeMindMapText(subject)}">${chaptersHtml||'<span class="kpi-sub">No chapters match this filter.</span>'}</div></section>`;
       }).join('');
       document.getElementById('mindMapGrid').innerHTML = subjectHtml || '<div class="kpi-sub">No subjects yet. Add or import your syllabus to build the map.</div>';
     }
