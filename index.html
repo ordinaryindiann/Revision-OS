@@ -236,6 +236,27 @@
     @media(max-width:700px){ .calendar-day{min-height:78px;padding:5px;} .calendar-event{font-size:.58rem;} .calendar-grid{gap:3px;} }
     @media(max-width:460px){ .calendar-day{min-height:62px;} .calendar-event{display:none;} .calendar-day-count{display:inline;} }
 
+    /* Clickable queue / calendar rows, chapter flash, toast */
+    .queue-item[data-open-ch], .calendar-event[data-open-ch], .calendar-row[data-open-ch] { cursor: pointer; }
+    .queue-item[data-open-ch]:hover { border-color: var(--ros-accent); }
+    .calendar-row[data-open-ch]:hover { background: color-mix(in srgb, var(--ros-accent) 10%, transparent); }
+    .calendar-event[data-open-ch]:hover { filter: brightness(1.25); }
+    .queue-stars { display: inline-flex; align-items: center; margin-top: 3px; }
+    .queue-stars .star-btn { font-size: .82rem; padding: 0 1px; }
+    .ws-ch.flash { border-color: var(--ros-accent); box-shadow: 0 0 0 2px var(--ros-accent), 0 0 28px -4px var(--ros-accent); animation: wsFlash 1.1s ease-in-out 2; }
+    @keyframes wsFlash { 0%,100% { transform: translateX(0); } 50% { transform: translateX(4px); } }
+    .queue-head-actions { display: flex; align-items: center; gap: 8px; }
+    .ros-toast {
+      position: fixed; left: 50%; bottom: 24px; z-index: 1300;
+      transform: translate(-50%, 20px); opacity: 0; pointer-events: none;
+      display: flex; align-items: center; gap: 12px; max-width: calc(100vw - 32px);
+      padding: 11px 14px; border-radius: 14px; font-size: .82rem; font-weight: 600;
+      background: var(--ros-surface-raised); color: var(--ros-text);
+      border: 1px solid var(--ros-border); box-shadow: 0 16px 40px rgba(0,0,0,.4);
+      transition: opacity .22s var(--ros-ease), transform .22s var(--ros-ease);
+    }
+    .ros-toast.show { opacity: 1; transform: translate(-50%, 0); pointer-events: auto; }
+
     /* Controls Toolbar */
     .toolbar {
       display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
@@ -798,7 +819,10 @@
       <div class="card">
         <div class="section-title">
           <span>Priority Retention Queue</span>
-          <span class="kpi-sub" id="queueCount">0 scheduled</span>
+          <span class="queue-head-actions">
+            <button class="btn btn-sm" id="btnRebalance" style="display:none" title="Spread overdue chapters across the next few days, highest priority first">⚖ Rebalance Overdue</button>
+            <span class="kpi-sub" id="queueCount">0 scheduled</span>
+          </span>
         </div>
         <div class="queue-list" id="queueList"></div>
       </div>
@@ -1065,6 +1089,8 @@
     </div>
   </div>
 
+  <div class="ros-toast" id="rosToast" role="status"><span id="rosToastMsg"></span><button class="btn btn-sm" id="rosToastAction" style="display:none"></button></div>
+
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js" defer></script>
 
   <script>
@@ -1253,14 +1279,19 @@
       return 'Core Syllabus Modules';
     }
 
+    // Local-date helpers (toISOString() is UTC and shifts the date by a day in IST early mornings)
+    function localISO(d) {
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    }
     function addDays(dateStr, days) {
-      const base = dateStr && !isNaN(new Date(dateStr).getTime()) ? new Date(dateStr) : new Date();
-      base.setDate(base.getDate() + (Number(days) || 1));
-      return base.toISOString().slice(0, 10);
+      const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(dateStr || '');
+      const base = m ? new Date(+m[1], +m[2] - 1, +m[3]) : new Date();
+      base.setDate(base.getDate() + (Number.isFinite(Number(days)) ? Number(days) : 1));
+      return localISO(base);
     }
 
     function todayISO() {
-      return new Date().toISOString().slice(0, 10);
+      return localISO(new Date());
     }
 
     function buildBlankState() {
@@ -1609,7 +1640,7 @@
         const pills = Array.from({ length: 9 }, (_, i) =>
           `<button class="r-pill ${i < ch.readings ? 'done' : ''} ${i === ch.readings ? 'next' : ''}" data-ch="${ch.id}" data-step="${i}" title="Revision ${i + 1}${(ch.history||[]).find(h=>h.pass===i+1)?.date ? ' · completed '+dateLabel((ch.history||[]).find(h=>h.pass===i+1).date) : ''}">R${i + 1}</button>`).join('');
 
-        return `<div class="ws-ch p-${prio.toLowerCase()} s-${status.cls}">
+        return `<div class="ws-ch p-${prio.toLowerCase()} s-${status.cls}" data-ws-ch="${ch.id}">
           <div class="ws-ch-main">
             <div class="ws-ch-titleline">
               <span class="ws-ch-title">${escapeHtml(ch.title)}</span>
@@ -1652,7 +1683,7 @@
       let html=weekdays.map(d=>`<div class="calendar-weekday">${d}</div>`).join('');
       for(let i=0;i<42;i++) { const dt=new Date(start); dt.setDate(start.getDate()+i); const iso=`${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}`; const entries=byDate[iso]||[];
         const classes=['calendar-day',dt.getMonth()!==month?'outside':'',iso===today?'today':'',iso===selectedCalendarDay?'selected':'',entries.length?'has-revisions':''].filter(Boolean).join(' ');
-        const items=entries.slice(0,3).map(ch=>`<div class="calendar-event ${iso<today?'overdue':''}" title="${escapeHtml(ch.subject)} — ${escapeHtml(ch.title)}">${escapeHtml(ch.title)}</div>`).join('');
+        const items=entries.slice(0,3).map(ch=>`<div class="calendar-event ${iso<today?'overdue':''}" data-open-ch="${ch.id}" title="${escapeHtml(ch.subject)} — ${escapeHtml(ch.title)} (click to open)">${escapeHtml(ch.title)}</div>`).join('');
         html+=`<div class="${classes}" data-calendar-day="${iso}"><div class="calendar-day-number"><span>${dt.getDate()}</span>${entries.length?`<span class="calendar-day-count">${entries.length} 📚</span>`:''}</div>${items}${entries.length>3?`<div class="calendar-empty">+${entries.length-3} more</div>`:''}</div>`;
       }
       grid.innerHTML=html;
@@ -1662,7 +1693,7 @@
       selectedCalendarDay=iso; const entries=(provided||Object.fromEntries(state.chapters.filter(ch=>ch.nextDue).map(ch=>[ch.nextDue,[]])))[iso] || state.chapters.filter(ch=>ch.nextDue===iso);
       const detail=document.getElementById('calendarDayDetail'); if(!detail)return;
       const chapters=Array.isArray(entries)?entries:[];
-      detail.innerHTML=`<strong>📅 ${dateLabel(iso,{weekday:'long',day:'numeric',month:'long',year:'numeric'})}</strong> · ${chapters.length} revision${chapters.length===1?'':'s'}${chapters.length?'<div style="margin-top:8px">'+chapters.map(ch=>`<div style="padding:5px 0;border-bottom:1px solid var(--ros-border)"><b>${escapeHtml(ch.title)}</b><span class="kpi-sub"> · ${escapeHtml(ch.subject)} · ${ch.readings ? 'R'+(ch.readings+1) : 'Planned / First Study'}</span></div>`).join('')+'</div>':'<div class="kpi-sub" style="margin-top:6px">No revisions scheduled for this date.</div>'}`;
+      detail.innerHTML=`<strong>📅 ${dateLabel(iso,{weekday:'long',day:'numeric',month:'long',year:'numeric'})}</strong> · ${chapters.length} revision${chapters.length===1?'':'s'}${chapters.length?'<div style="margin-top:8px">'+chapters.map(ch=>`<div class="calendar-row" data-open-ch="${ch.id}" title="Open this chapter" style="padding:5px 4px;border-bottom:1px solid var(--ros-border)"><b>${escapeHtml(ch.title)}</b><span class="kpi-sub"> · ${escapeHtml(ch.subject)} · ${ch.readings ? 'R'+(ch.readings+1) : 'Planned / First Study'}</span></div>`).join('')+'</div>':'<div class="kpi-sub" style="margin-top:6px">No revisions scheduled for this date.</div>'}`;
     }
     const calendarCollapsed = localStorage.getItem('ros_calendar_collapsed') !== 'false';
     const calendarSection = document.getElementById('revisionCalendarSection');
@@ -1738,16 +1769,24 @@
       // Priority Retention Queue
       scheduled.sort((a, b) => (a.nextDue || '').localeCompare(b.nextDue || ''));
       document.getElementById('queueCount').textContent = `${scheduled.length} scheduled`;
+      const overdueN = scheduled.filter(ch => ch.nextDue < today).length;
+      const rebalBtn = document.getElementById('btnRebalance');
+      if (rebalBtn) {
+        rebalBtn.style.display = overdueN >= 2 ? 'inline-flex' : 'none';
+        rebalBtn.textContent = `⚖ Rebalance ${overdueN} Overdue`;
+      }
       const qList = document.getElementById('queueList');
       if (!scheduled.length) {
         qList.innerHTML = `<div class="kpi-sub">${totalChapters ? 'Open any subject tile below and click R1 to start scheduling.' : 'Load your 148 UPSC chapters or import an Excel file to start.'}</div>`;
       } else {
         qList.innerHTML = scheduled.slice(0, 15).map(ch => {
           const isDue = ch.nextDue <= today;
-          return `<div class="queue-item">
+          const qStars = Array.from({ length: 5 }, (_, sIdx) => `<button class="star-btn ${sIdx + 1 <= (ch.confidence || 0) ? 'active' : ''}" data-star-ch="${ch.id}" data-star-val="${sIdx + 1}" title="Confidence ${sIdx + 1}/5">★</button>`).join('');
+          return `<div class="queue-item" data-open-ch="${ch.id}" title="Open this chapter in its subject workspace">
             <div>
-              <strong>${ch.title}</strong>
-              <div class="kpi-sub">${ch.subject} • Pass R${ch.readings}/9</div>
+              <strong>${escapeHtml(ch.title)}</strong>
+              <div class="kpi-sub">${escapeHtml(ch.subject)} • Pass R${ch.readings}/9</div>
+              <div class="queue-stars" title="Rate recall confidence">${qStars}</div>
             </div>
             <div style="display:flex;align-items:center;gap:6px">
               <span class="badge ${isDue ? 'due' : ''}">${isDue ? 'OVERDUE · ' + dateLabel(ch.nextDue) : dateLabel(ch.nextDue)}</span>
@@ -1874,6 +1913,66 @@
       }
     }
 
+    // Jump from queue / calendar straight into a chapter inside its subject workspace
+    function openChapterInWorkspace(chId) {
+      const ch = state.chapters.find(c => c.id === chId); if (!ch) return;
+      const pf = document.getElementById('priorityFilter');
+      if (pf.value !== 'all' && (ch.priority || 'Moderate') !== pf.value) { pf.value = 'all'; renderAll(); }
+      openSubjectWorkspace(ch.subject);
+      requestAnimationFrame(() => {
+        const el = document.querySelector(`#wsChaptersList [data-ws-ch="${CSS.escape(chId)}"]`);
+        if (!el) return;
+        el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+        el.classList.add('flash');
+        setTimeout(() => el.classList.remove('flash'), 2600);
+      });
+    }
+
+    let toastTimer = null;
+    function showToast(message, actionLabel, actionFn) {
+      const toast = document.getElementById('rosToast'), act = document.getElementById('rosToastAction');
+      document.getElementById('rosToastMsg').textContent = message;
+      if (actionLabel && actionFn) {
+        act.textContent = actionLabel; act.style.display = 'inline-flex';
+        act.onclick = () => { toast.classList.remove('show'); actionFn(); };
+      } else { act.style.display = 'none'; act.onclick = null; }
+      toast.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => toast.classList.remove('show'), 9000);
+    }
+
+    // Overdue recovery: spread overdue chapters over the next 3-5 days, highest priority first
+    function getOverdueChapters() {
+      const today = todayISO();
+      return state.chapters.filter(c => c.readings > 0 && c.nextDue && c.nextDue < today);
+    }
+    function rebalanceOverdue() {
+      const n = getOverdueChapters().length;
+      if (n < 2) { showToast('Nothing to rebalance — fewer than 2 overdue chapters.'); return; }
+      const span = n <= 9 ? 3 : n <= 20 ? 4 : 5;
+      showGuard(
+        'Rebalance overdue chapters?',
+        `Spread ${n} overdue chapters evenly across the next ${span} days, starting today (about ${Math.ceil(n / span)} per day). Critical and High priority chapters come first. You can undo right after.`,
+        'Rebalance',
+        () => {
+          const list = getOverdueChapters();
+          if (list.length < 2) return;
+          const today = todayISO(), count = list.length;
+          const days = count <= 9 ? 3 : count <= 20 ? 4 : 5;
+          const rank = { Critical: 0, High: 1, Moderate: 2 };
+          list.sort((a, b) =>
+            (rank[a.priority || 'Moderate'] - rank[b.priority || 'Moderate']) ||
+            (a.nextDue || '').localeCompare(b.nextDue || '') ||
+            ((a.confidence || 0) - (b.confidence || 0)));
+          captureUndo('overdue rebalance');
+          list.forEach((ch, i) => { ch.nextDue = addDays(today, Math.floor(i * days / count)); });
+          saveState();
+          showToast(`Rebalanced ${count} overdue chapters across ${days} days.`, 'Undo', undoLastChange);
+        }
+      );
+    }
+    document.getElementById('btnRebalance').onclick = rebalanceOverdue;
+
     // Event Delegation
     document.body.addEventListener('click', e => {
       const tile = e.target.closest('[data-open-tile]');
@@ -1894,6 +1993,11 @@
       const starBtn = e.target.closest('[data-star-ch]');
       if (starBtn) {
         setConfidence(starBtn.dataset.starCh, Number(starBtn.dataset.starVal));
+        return;
+      }
+      const openCh = e.target.closest('[data-open-ch]');
+      if (openCh) {
+        openChapterInWorkspace(openCh.dataset.openCh);
         return;
       }
       const transferBtn = e.target.closest('[data-transfer-ch]');
