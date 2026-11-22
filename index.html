@@ -1690,7 +1690,7 @@
               <div class="ch-more-menu">
                 <button data-rename-ch="${ch.id}">✎ Rename Chapter</button>
                 <button data-schedule-ch="${ch.id}">📅 Set / Change Date</button>
-                <button data-edit-pass-date="${ch.id}">🗓 Edit R1 date</button>
+                <button data-edit-pass-date="${ch.id}" data-pass="1">🗓 Set / Edit R1 date</button><button data-edit-pass-date="${ch.id}" data-pass="2">🗓 Set / Edit R2 date</button><button data-edit-pass-date="${ch.id}" data-pass="3">🗓 Set / Edit R3 date</button><button data-edit-pass-date="${ch.id}" data-pass="4">🗓 Set / Edit R4 date</button><button data-edit-pass-date="${ch.id}" data-pass="5">🗓 Set / Edit R5 date</button>
                 <button data-delete-ch="${ch.id}" class="danger">Delete Chapter</button>
               </div>
             </div>
@@ -2034,8 +2034,26 @@
       const editPassDate = e.target.closest('[data-edit-pass-date]');
       if (editPassDate) {
         const ch = state.chapters.find(c=>c.id===editPassDate.dataset.editPassDate); if(!ch) return;
-        const rec = (ch.history||[]).find(h=>h.pass===1); if(!rec) { showToast('First reading date record not found'); return; }
-        openRosDate(rec.date,(date)=>{ if(!date) return; captureUndo('first reading date change'); rec.date=date; if(ch.readings===1){ch.lastRead=date;ch.nextDue=scheduleFrom(ch,date,1);} saveState(); },'Change first reading date'); return;
+        const pass = Number(editPassDate.dataset.pass)||1;
+        const existing = (ch.history||[]).find(h=>h.pass===pass);
+        openRosDate(existing?.date || ch.lastRead || todayISO(),(date)=>{
+          if(!date) return;
+          captureUndo(`revision R${pass} date set`);
+          ch.history=Array.isArray(ch.history)?ch.history:[];
+          // Setting a later revision date implies all earlier revisions are completed.
+          for(let p=1;p<=pass;p++){
+            let record=ch.history.find(h=>h.pass===p);
+            if(!record){
+              record={pass:p,date,confidence:ch.confidence||0,priority:ch.priority||'Moderate',previousLastRead:null,previousNextDue:null};
+              ch.history.push(record);
+            } else if(p===pass){ record.date=date; }
+          }
+          ch.readings=Math.max(Number(ch.readings)||0,pass);
+          if(ch.readings===pass || pass>=Number(ch.readings||0)){
+            ch.lastRead=date; ch.nextDue=scheduleFrom(ch,date,pass);
+          }
+          saveState();
+        },`Set / Edit R${pass} date`); return;
       }
       const pill = e.target.closest('[data-ch][data-step]');
       if (pill) {
