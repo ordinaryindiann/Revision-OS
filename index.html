@@ -282,6 +282,17 @@
       grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
       gap: 14px;
     }
+    .subject-tile.urgency-critical { border-color: rgba(239,68,68,.65); background: linear-gradient(145deg, rgba(239,68,68,.12), var(--ros-surface) 45%); }
+    .subject-tile.urgency-high { border-color: rgba(245,158,11,.55); background: linear-gradient(145deg, rgba(245,158,11,.10), var(--ros-surface) 45%); }
+    .subject-tile.urgency-low { border-color: rgba(132,169,75,.35); }
+    .subject-tag-chip { display:inline-flex; margin-top:7px; font-size:.68rem; padding:3px 8px; border-radius:99px; background:var(--ros-surface-raised); border:1px solid var(--ros-border); color:var(--ros-text-muted); }
+    .subject-tile[draggable="true"] { cursor:grab; }
+    .subject-tile.dragging { opacity:.45; transform:scale(.985); }
+    .subject-tile.drop-target { outline:2px dashed var(--ros-accent); outline-offset:3px; }
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 14px;
+    }
 
     .subject-tile {
       background: var(--ros-surface);
@@ -611,7 +622,8 @@
           <option value="Moderate">Moderate Only</option>
         </select>
       </div>
-      <input type="search" class="search-box" id="searchInput" placeholder="Search subjects, pillars, or chapters..." />
+      <input type="search" class="search-box" id="searchInput" placeholder="Search subjects, tags, or chapters..." />
+      <select class="curve-select" id="subjectTagFilter" style="min-width:155px"><option value="all">All Tags</option></select>
     </section>
 
     <!-- Subject Tiles Container -->
@@ -635,7 +647,7 @@
             <button class="btn" id="subjectMoreBtn" aria-label="Subject options">More ⋯</button>
             <div class="ch-more-menu">
               <button data-rename-subject>✎ Rename Subject</button>
-              <button data-edit-category>▦ Change Category</button>
+              <button data-edit-category>▦ Assign / Change Tag</button>
               <button data-delete-subject class="danger">Delete Subject</button>
             </div>
           </div>
@@ -983,6 +995,8 @@
         subjectCurves: {},
         subjects: [],
         pillars: {},
+        subjectTags: {},
+        subjectOrder: [],
         templates: JSON.parse(JSON.stringify(DEFAULT_TEMPLATES)),
         chapters: [],
         updatedAt: Date.now()
@@ -1008,6 +1022,8 @@
         subjectCurves: {},
         subjects,
         pillars: { ...UPSC_PILLARS },
+        subjectTags: {},
+        subjectOrder: subjects.slice(),
         templates: JSON.parse(JSON.stringify(DEFAULT_TEMPLATES)),
         chapters,
         updatedAt: Date.now()
@@ -1034,6 +1050,8 @@
       const mode = raw.mode === 'subject' ? 'subject' : 'general';
       const subjectCurves = (raw.subjectCurves && typeof raw.subjectCurves === 'object') ? raw.subjectCurves : {};
       const pillars = (raw.pillars && typeof raw.pillars === 'object') ? { ...raw.pillars } : {};
+      const subjectTags = (raw.subjectTags && typeof raw.subjectTags === 'object') ? { ...raw.subjectTags } : {};
+      const subjectOrder = Array.isArray(raw.subjectOrder) ? [...raw.subjectOrder] : [];
 
       const rawChapters = Array.isArray(raw.chapters) ? raw.chapters : [];
       const chapters = rawChapters.map((c, idx) => {
@@ -1078,6 +1096,8 @@
         subjectCurves,
         subjects,
         pillars,
+        subjectTags,
+        subjectOrder: [...subjectOrder.filter(s => subjects.includes(s)), ...subjects.filter(s => !subjectOrder.includes(s))],
         templates,
         chapters,
         updatedAt: raw.updatedAt || Date.now()
@@ -1180,7 +1200,7 @@
       const avgConf = rated.length ? (rated.reduce((s, c) => s + c.confidence, 0) / rated.length).toFixed(1) : '0.0';
 
       document.getElementById('wsSubjectTitle').textContent = subj;
-      document.getElementById('wsSubjectPillar').textContent = state.pillars[subj] || inferPillar(subj);
+      document.getElementById('wsSubjectPillar').textContent = state.subjectTags[subj] ? `# ${state.subjectTags[subj]}` : 'Untagged';
       document.getElementById('wsSubjectStats').textContent = `${doneCount}/${allCh.length} chapters initiated • Avg Confidence: ${avgConf} ★`;
 
       const curveWrap = document.getElementById('wsSubjectCurveWrap');
@@ -1398,83 +1418,63 @@
 
       renderCalendar();
 
-      // Subject Tiles Grouped by Pillar
+      // Flexible subject tiles: user tags are optional, tiles are independent and sortable.
       const query = document.getElementById('searchInput').value.trim().toLowerCase();
       const prioFilter = document.getElementById('priorityFilter').value;
+      const tagFilterEl = document.getElementById('subjectTagFilter');
+      const activeTagFilter = tagFilterEl ? tagFilterEl.value : 'all';
       const container = document.getElementById('syllabusContainer');
 
       if (!state.subjects.length) {
         container.innerHTML = `
           <div class="empty-hero">
             <h2>Your Revision OS Workspace is Ready</h2>
-            <p>Start with a clean slate for new users, import any 2-column Excel/CSV syllabus, or load your pre-categorized 148-chapter UPSC syllabus in one click.</p>
+            <p>Start with a clean slate for new users, import any 2-column Excel/CSV syllabus, or load your pre-categorized 148-chapter UPSC syllabus.</p>
             <div class="empty-actions">
               <button class="btn btn-accent" onclick="document.getElementById('btnLoadUPSC').click()">Load My 148 UPSC Syllabus</button>
               <button class="btn" onclick="document.getElementById('btnImportExcel').click()">Import Excel / CSV</button>
               <button class="btn" onclick="document.getElementById('btnManageSyllabus').click()">+ Add Subject Manually</button>
             </div>
-          </div>
-        `;
+          </div>`;
         return;
       }
-
-      const pillarGroups = {};
-      state.subjects.forEach(subj => {
-        const p = state.pillars[subj] || inferPillar(subj);
-        if (!pillarGroups[p]) pillarGroups[p] = [];
-        pillarGroups[p].push(subj);
-      });
-
-      container.innerHTML = Object.entries(pillarGroups).map(([pillarName, subjList]) => {
-        const tilesHtml = subjList.map(subj => {
-          const allCh = state.chapters.filter(c => c.subject === subj);
-          const matchingCh = allCh.filter(c => {
-            if (prioFilter !== 'all' && (c.priority || 'Moderate') !== prioFilter) return false;
-            if (query && !c.title.toLowerCase().includes(query) && !subj.toLowerCase().includes(query) && !pillarName.toLowerCase().includes(query)) return false;
-            return true;
-          });
-
-          if ((query || prioFilter !== 'all') && !matchingCh.length && !subj.toLowerCase().includes(query)) return '';
-
-          const doneCount = allCh.filter(c => c.readings > 0).length;
-          const pct = allCh.length ? Math.round((doneCount / allCh.length) * 100) : 0;
-          const critInSubj = allCh.filter(c => c.priority === 'Critical').length;
-          const rated = allCh.filter(c => c.confidence > 0);
-          const avgStar = rated.length ? (rated.reduce((s, c) => s + c.confidence, 0) / rated.length).toFixed(1) : '—';
-
-          return `<div class="subject-tile" data-open-tile="${subj}">
-            <div>
-              <div class="tile-top">
-                <div class="tile-title">${subj}</div>
-                ${critInSubj > 0 ? `<span class="prio-btn prio-critical">${critInSubj} Critical</span>` : ''}
-              </div>
-              <div class="kpi-sub" style="margin-top:4px">${allCh.length} chapters • Avg ★ ${avgStar}</div>
-            </div>
-
-            <div>
-              <div class="tile-stats">
-                <span>Mastery Progress</span>
-                <span><strong>${doneCount}/${allCh.length}</strong> (${pct}%)</span>
-              </div>
-              <div class="prog-track"><div class="prog-fill" style="width:${pct}%"></div></div>
-            </div>
-
-            <div class="tile-footer">
-              <span>${state.mode === 'subject' ? (state.templates[state.subjectCurves[subj] || state.globalCurve]?.name.split(' (')[0] || 'Custom Curve') : 'General Cycle'}</span>
-              <span class="open-chip">Open Chapters →</span>
-            </div>
-          </div>`;
-        }).join('');
-
-        if (!tilesHtml.trim()) return '';
-        return `<section class="pillar-section">
-          <div class="pillar-header">
-            <span class="pillar-title">${pillarName}</span>
-            <span class="kpi-sub">${subjList.length} Subject Tiles</span>
-          </div>
-          <div class="subject-tile-grid">${tilesHtml}</div>
-        </section>`;
+      const availableTags = [...new Set(Object.values(state.subjectTags).filter(t => typeof t === 'string' && t.trim()))].sort((a,b)=>a.localeCompare(b));
+      if (tagFilterEl) { const prior = tagFilterEl.value || 'all'; tagFilterEl.innerHTML = '<option value="all">All Tags</option>' + availableTags.map(t=>`<option value="${escapeMindMapText(t)}">${escapeMindMapText(t)}</option>`).join(''); tagFilterEl.value = availableTags.includes(prior) ? prior : 'all'; }
+      const selectedTag = tagFilterEl ? tagFilterEl.value : 'all';
+      const ordered = [...state.subjectOrder.filter(s => state.subjects.includes(s)), ...state.subjects.filter(s => !state.subjectOrder.includes(s))];
+      const tilesHtml = ordered.map(subj => {
+        const allCh = state.chapters.filter(c => c.subject === subj);
+        const matchingCh = allCh.filter(c => prioFilter === 'all' || (c.priority || 'Moderate') === prioFilter);
+        if ((query || prioFilter !== 'all') && !matchingCh.length && !subj.toLowerCase().includes(query) && !(state.subjectTags[subj]||'').toLowerCase().includes(query)) return '';
+        if (query && !subj.toLowerCase().includes(query) && !allCh.some(c => c.title.toLowerCase().includes(query)) && !(state.subjectTags[subj]||'').toLowerCase().includes(query)) return '';
+        const doneCount = allCh.filter(c => c.readings > 0).length;
+        const pct = allCh.length ? Math.round((doneCount / allCh.length) * 100) : 0;
+        const critCount = allCh.filter(c => c.priority === 'Critical').length;
+        const highCount = allCh.filter(c => c.priority === 'High').length;
+        const urgencyClass = critCount ? 'urgency-critical' : highCount ? 'urgency-high' : 'urgency-low';
+        const rated = allCh.filter(c => c.confidence > 0);
+        const avgStar = rated.length ? (rated.reduce((sum, c) => sum + c.confidence, 0) / rated.length).toFixed(1) : '—';
+        const tag = state.subjectTags[subj] || '';
+        if (selectedTag !== 'all' && tag !== selectedTag) return '';
+        return `<div class="subject-tile ${urgencyClass}" data-open-tile="${escapeMindMapText(subj)}" draggable="true" data-sort-subject="${escapeMindMapText(subj)}">
+          <div><div class="tile-top"><div class="tile-title">${escapeMindMapText(subj)}</div>${critCount ? `<span class="prio-btn prio-critical">${critCount} Critical</span>` : highCount ? `<span class="prio-btn prio-high">${highCount} High</span>` : ''}</div>
+          ${tag ? `<span class="subject-tag-chip"># ${escapeMindMapText(tag)}</span>` : `<span class="subject-tag-chip" style="opacity:.55">+ Add tag in subject options</span>`}
+          <div class="kpi-sub" style="margin-top:5px">${allCh.length} chapters • Avg ★ ${avgStar}</div></div>
+          <div><div class="tile-stats"><span>Mastery Progress</span><span><strong>${doneCount}/${allCh.length}</strong> (${pct}%)</span></div><div class="prog-track"><div class="prog-fill" style="width:${pct}%"></div></div></div>
+          <div class="tile-footer"><span>${state.mode === 'subject' ? (state.templates[state.subjectCurves[subj] || state.globalCurve]?.name.split(' (')[0] || 'Custom Curve') : 'General Cycle'}</span><span class="open-chip">Open Chapters →</span></div></div>`;
       }).join('');
+      container.innerHTML = `<div class="subject-tile-grid" id="subjectTileGrid">${tilesHtml || '<p class="kpi-sub">No subjects match these filters.</p>'}</div>`;
+      // Drag-to-reorder tiles; save ordering only, chapter data remains untouched.
+      const grid = document.getElementById('subjectTileGrid');
+      if (grid) {
+        grid.querySelectorAll('[data-sort-subject]').forEach(tile => {
+          tile.addEventListener('dragstart', e => { e.dataTransfer.setData('text/plain', tile.dataset.sortSubject); tile.classList.add('dragging'); });
+          tile.addEventListener('dragend', () => { tile.classList.remove('dragging'); grid.querySelectorAll('.drop-target').forEach(x=>x.classList.remove('drop-target')); });
+          tile.addEventListener('dragover', e => { e.preventDefault(); if (!tile.classList.contains('dragging')) tile.classList.add('drop-target'); });
+          tile.addEventListener('dragleave', () => tile.classList.remove('drop-target'));
+          tile.addEventListener('drop', e => { e.preventDefault(); tile.classList.remove('drop-target'); const from=e.dataTransfer.getData('text/plain'), to=tile.dataset.sortSubject; if (!from || from===to) return; const arr=[...state.subjectOrder.filter(x=>state.subjects.includes(x)),...state.subjects.filter(x=>!state.subjectOrder.includes(x))]; const a=arr.indexOf(from), b=arr.indexOf(to); if(a<0||b<0)return; arr.splice(a,1); arr.splice(b,0,from); state.subjectOrder=arr; saveState(); });
+        });
+      }
     }
 
     // Event Delegation
@@ -1544,6 +1544,8 @@
           state.chapters.forEach(c => { if (c.subject === oldName) c.subject = clean; });
           if (state.subjectCurves[oldName] !== undefined) { state.subjectCurves[clean] = state.subjectCurves[oldName]; delete state.subjectCurves[oldName]; }
           if (state.pillars[oldName] !== undefined) { state.pillars[clean] = state.pillars[oldName]; delete state.pillars[oldName]; }
+          if (state.subjectTags[oldName] !== undefined) { state.subjectTags[clean] = state.subjectTags[oldName]; delete state.subjectTags[oldName]; }
+          state.subjectOrder = state.subjectOrder.map(x => x === oldName ? clean : x);
           activeSubjectModal = clean; saveState();
         } return;
       }
@@ -1551,11 +1553,11 @@
       if (editCategoryBtn) {
         if (!activeSubjectModal) return;
         const subj = activeSubjectModal;
-        const oldCategory = state.pillars[subj] || inferPillar(subj);
-        const newCategory = prompt('Change folder/category for this subject:', oldCategory);
-        if (newCategory && newCategory.trim() && newCategory.trim() !== oldCategory) {
-          captureUndo('category change');
-          state.pillars[subj] = newCategory.trim();
+        const oldTag = state.subjectTags[subj] || '';
+        const newTag = prompt('Assign an optional tag/folder name (leave blank to remove it):', oldTag);
+        if (newTag !== null && newTag.trim() !== oldTag) {
+          captureUndo('subject tag change');
+          if (newTag.trim()) state.subjectTags[subj] = newTag.trim(); else delete state.subjectTags[subj];
           saveState();
         }
         document.getElementById('subjectMoreWrap')?.classList.remove('open');
@@ -1566,7 +1568,7 @@
         if (!activeSubjectModal) return; const subj = activeSubjectModal; const count = state.chapters.filter(c => c.subject === subj).length;
         if (confirm(`Delete subject "${subj}" and its ${count} chapter${count === 1 ? '' : 's'}? You can use Undo immediately to restore it.`)) {
           captureUndo('subject deletion'); state.chapters = state.chapters.filter(c => c.subject !== subj); state.subjects = state.subjects.filter(x => x !== subj);
-          delete state.subjectCurves[subj]; delete state.pillars[subj]; activeSubjectModal = null;
+          delete state.subjectCurves[subj]; delete state.pillars[subj]; delete state.subjectTags[subj]; state.subjectOrder = state.subjectOrder.filter(x => x !== subj); activeSubjectModal = null;
           document.getElementById('modalSubjectWorkspace').classList.remove('open'); saveState();
         } return;
       }
@@ -1629,6 +1631,7 @@
     document.getElementById('modeSubject').onclick = () => { state.mode = 'subject'; saveState(); };
     document.getElementById('globalCurveSelect').onchange = e => { state.globalCurve = e.target.value; saveState(); };
     document.getElementById('priorityFilter').onchange = () => renderAll();
+    document.getElementById('subjectTagFilter').onchange = () => renderAll();
     document.getElementById('searchInput').oninput = () => renderAll();
 
     // Load 148 UPSC Syllabus Preset
