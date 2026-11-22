@@ -194,6 +194,27 @@
     .f-lbl { font-size: 0.69rem; color: var(--ros-text-muted); font-weight: 600; }
 
 
+
+    /* Premium motion + polished surfaces */
+    :root { --ros-ease: cubic-bezier(.2,.8,.2,1); }
+    body, .card, .subject-tile, .schedule-calendar, .modal, .btn, .mini-kpi, .mm-node, .calendar-day { transition: background .22s var(--ros-ease), color .22s var(--ros-ease), border-color .22s var(--ros-ease), box-shadow .22s var(--ros-ease), transform .22s var(--ros-ease), opacity .22s var(--ros-ease); }
+    .card, .subject-tile, .schedule-calendar, .mini-kpi, .mm-node { box-shadow: 0 1px 0 rgba(255,255,255,.025), 0 10px 28px rgba(0,0,0,.08); }
+    .subject-tile:hover, .card:hover, .mini-kpi:hover { transform: translateY(-2px); box-shadow: 0 14px 34px rgba(0,0,0,.15); }
+    .btn { position:relative; overflow:hidden; }
+    .btn:active { transform:scale(.97); }
+    .modal-overlay.open .modal { animation: rosModalIn .26s var(--ros-ease) both; }
+    .subject-tile, .mm-node, .calendar-day { animation: rosFadeUp .28s var(--ros-ease) both; }
+    @keyframes rosFadeUp { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+    @keyframes rosModalIn { from { opacity:0; transform:translateY(10px) scale(.985); } to { opacity:1; transform:translateY(0) scale(1); } }
+    @media(prefers-reduced-motion:reduce){ *,*::before,*::after { animation:none!important; transition:none!important; scroll-behavior:auto!important; } }
+    .calendar-collapse-btn { white-space:nowrap; }
+    .calendar-content { overflow:hidden; max-height:1800px; opacity:1; transition:max-height .35s var(--ros-ease),opacity .25s var(--ros-ease),margin .25s var(--ros-ease); }
+    .schedule-calendar.collapsed .calendar-content { max-height:0; opacity:0; margin:0; pointer-events:none; }
+    .schedule-calendar.collapsed { padding-bottom:12px; }
+    .schedule-calendar.collapsed .calendar-head { margin-bottom:0; }
+    .schedule-calendar.collapsed .calendar-head .kpi-sub { display:none; }
+    .category-edit-btn { font-size:.68rem; padding:4px 8px; }
+
     /* Revision calendar */
     .schedule-calendar { margin:0 0 20px; background:var(--ros-surface); border:1px solid var(--ros-border); border-radius:var(--ros-radius-md); padding:16px; }
     .calendar-head { display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:12px; }
@@ -569,10 +590,10 @@
     <section class="schedule-calendar" id="revisionCalendarSection">
       <div class="calendar-head">
         <div><div class="section-title" style="margin-bottom:3px">Revision Calendar</div><div class="kpi-sub">See exactly what is scheduled on each date. Select a day for its full revision list.</div></div>
-        <div class="calendar-nav"><button class="btn btn-sm" id="calendarPrev">←</button><div class="calendar-month-label" id="calendarMonthLabel">Month YYYY</div><button class="btn btn-sm" id="calendarNext">→</button><button class="btn btn-sm" id="calendarToday">Today</button></div>
+        <div class="calendar-nav"><button class="btn btn-sm" id="calendarPrev">←</button><div class="calendar-month-label" id="calendarMonthLabel">Month YYYY</div><button class="btn btn-sm" id="calendarNext">→</button><button class="btn btn-sm" id="calendarToday">Today</button><button class="btn btn-sm calendar-collapse-btn" id="calendarToggle" aria-expanded="false">Show calendar ▾</button></div>
       </div>
-      <div class="calendar-grid" id="calendarGrid"></div>
-      <div class="calendar-detail" id="calendarDayDetail">Select a date to see the scheduled chapters.</div>
+      <div class="calendar-content" id="calendarContent"><div class="calendar-grid" id="calendarGrid"></div>
+      <div class="calendar-detail" id="calendarDayDetail">Select a date to see the scheduled chapters.</div></div>
     </section>
 
     <!-- Controls Toolbar -->
@@ -614,6 +635,7 @@
             <button class="btn" id="subjectMoreBtn" aria-label="Subject options">More ⋯</button>
             <div class="ch-more-menu">
               <button data-rename-subject>✎ Rename Subject</button>
+              <button data-edit-category>▦ Change Category</button>
               <button data-delete-subject class="danger">Delete Subject</button>
             </div>
           </div>
@@ -1248,6 +1270,18 @@
       const chapters=Array.isArray(entries)?entries:[];
       detail.innerHTML=`<strong>📅 ${dateLabel(iso,{weekday:'long',day:'numeric',month:'long',year:'numeric'})}</strong> · ${chapters.length} revision${chapters.length===1?'':'s'}${chapters.length?'<div style="margin-top:8px">'+chapters.map(ch=>`<div style="padding:5px 0;border-bottom:1px solid var(--ros-border)"><b>${escapeHtml(ch.title)}</b><span class="kpi-sub"> · ${escapeHtml(ch.subject)} · R${ch.readings+1}</span></div>`).join('')+'</div>':'<div class="kpi-sub" style="margin-top:6px">No revisions scheduled for this date.</div>'}`;
     }
+    const calendarCollapsed = localStorage.getItem('ros_calendar_collapsed') !== 'false';
+    const calendarSection = document.getElementById('revisionCalendarSection');
+    const calendarToggle = document.getElementById('calendarToggle');
+    function setCalendarCollapsed(collapsed) {
+      calendarSection.classList.toggle('collapsed', collapsed);
+      calendarToggle.setAttribute('aria-expanded', String(!collapsed));
+      calendarToggle.textContent = collapsed ? 'Show calendar ▾' : 'Hide calendar ▴';
+      localStorage.setItem('ros_calendar_collapsed', String(collapsed));
+    }
+    setCalendarCollapsed(calendarCollapsed);
+    calendarToggle.onclick = () => setCalendarCollapsed(!calendarSection.classList.contains('collapsed'));
+
     document.getElementById('calendarPrev').onclick=()=>{calendarCursor.setMonth(calendarCursor.getMonth()-1);renderCalendar();};
     document.getElementById('calendarNext').onclick=()=>{calendarCursor.setMonth(calendarCursor.getMonth()+1);renderCalendar();};
     document.getElementById('calendarToday').onclick=()=>{calendarCursor=new Date();calendarCursor.setDate(1);selectedCalendarDay=todayISO();renderCalendar();};
@@ -1512,6 +1546,20 @@
           if (state.pillars[oldName] !== undefined) { state.pillars[clean] = state.pillars[oldName]; delete state.pillars[oldName]; }
           activeSubjectModal = clean; saveState();
         } return;
+      }
+      const editCategoryBtn = e.target.closest('[data-edit-category]');
+      if (editCategoryBtn) {
+        if (!activeSubjectModal) return;
+        const subj = activeSubjectModal;
+        const oldCategory = state.pillars[subj] || inferPillar(subj);
+        const newCategory = prompt('Change folder/category for this subject:', oldCategory);
+        if (newCategory && newCategory.trim() && newCategory.trim() !== oldCategory) {
+          captureUndo('category change');
+          state.pillars[subj] = newCategory.trim();
+          saveState();
+        }
+        document.getElementById('subjectMoreWrap')?.classList.remove('open');
+        return;
       }
       const delSubjBtn = e.target.closest('[data-delete-subject]');
       if (delSubjBtn) {
