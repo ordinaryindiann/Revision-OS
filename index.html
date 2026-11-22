@@ -381,13 +381,28 @@
       background: var(--ros-bg); border: 1px solid var(--ros-border);
       border-radius: var(--ros-radius-md); padding: 20px;
     }
-    .mm-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 14px; }
-    .mm-node {
-      background: var(--ros-surface); border: 1px solid var(--ros-border);
-      border-radius: var(--ros-radius-md); padding: 14px;
-    }
-    .mm-node.active { border-color: var(--ros-accent); }
-    .mm-link { font-size: 0.75rem; color: var(--ros-accent); margin-top: 6px; }
+    .mm-toolbar {display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 12px}
+    .mm-summary {display:grid;grid-template-columns:repeat(4,minmax(95px,1fr));gap:8px;margin-bottom:12px}
+    .mm-stat {background:var(--ros-surface);border:1px solid var(--ros-border);border-radius:10px;padding:9px 11px}
+    .mm-stat b {display:block;font-size:1.1rem}.mm-stat small{color:var(--ros-text-muted);font-size:.72rem}
+    .mm-legend {display:flex;flex-wrap:wrap;gap:8px 14px;padding:9px 11px;border:1px solid var(--ros-border);border-radius:10px;margin-bottom:12px;font-size:.75rem;color:var(--ros-text-muted)}
+    .mindmap-canvas {height:min(68vh,680px);overflow:auto;background:var(--ros-bg);border:1px solid var(--ros-border);border-radius:var(--ros-radius-md);padding:18px}
+    .mm-grid {display:flex;flex-direction:column;gap:18px;min-width:max-content;}
+    .mm-node {background:var(--ros-surface);border:1px solid var(--ros-border);border-radius:12px;padding:12px 14px;min-width:290px;max-width:100%;}
+    .mm-subject {border-left:4px solid var(--ros-accent);display:flex;flex-direction:column;gap:10px}
+    .mm-subject-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+    .mm-subject-title{font-weight:750;font-size:1rem}
+    .mm-subject-meta{font-size:.75rem;color:var(--ros-text-muted)}
+    .mm-chapter-branch{display:flex;flex-wrap:wrap;gap:8px;padding-left:14px;border-left:2px solid var(--ros-border);margin-left:4px}
+    .mm-chapter{border:1px solid var(--ros-border);border-radius:9px;background:var(--ros-bg);padding:8px 10px;display:flex;align-items:center;gap:7px;max-width:330px;font-size:.78rem;line-height:1.35}
+    .mm-chapter .mm-status{font-size:1rem;flex:none}
+    .mm-chapter .mm-ch-title{font-weight:600;overflow-wrap:anywhere}
+    .mm-chapter .mm-ch-meta{font-size:.68rem;color:var(--ros-text-muted);white-space:nowrap}
+    .mm-chapter.mm-overdue{border-color:#e45b5b;background:rgba(228,91,91,.07)}
+    .mm-chapter.mm-critical{border-color:#e45b5b}
+    .mm-chapter.mm-high{border-color:#e5a04b}
+    .mm-filter{background:var(--ros-surface);color:var(--ros-text);border:1px solid var(--ros-border);border-radius:8px;padding:8px}
+    @media(max-width:600px){.mm-summary{grid-template-columns:repeat(2,1fr)}.mm-chapter{max-width:100%;width:100%}.mm-chapter-branch{display:grid;grid-template-columns:1fr}}
   </style>
 </head>
 <body>
@@ -694,10 +709,17 @@
         <h3>Syllabus Mind Map &amp; Pillar Architecture</h3>
         <button class="btn" data-close="modalMindMap">Close</button>
       </div>
-      <p class="kpi-sub" style="margin-bottom:12px">Visual overview of your categorized subject tiles, confidence ratings, and mastery progress.</p>
-      <div class="mindmap-canvas">
-        <div class="mm-grid" id="mindMapGrid"></div>
+      <p class="kpi-sub" style="margin-bottom:12px">An eagle-eye syllabus map: subjects branch into chapters, with visual markers showing revision urgency and progress.</p>
+      <div id="mindMapSummary" class="mm-summary"></div>
+      <div class="mm-toolbar">
+        <input id="mindMapSearch" class="mm-filter" type="search" placeholder="Search subjects or chapters…" style="flex:1;min-width:180px" />
+        <select id="mindMapFilter" class="mm-filter" aria-label="Filter chapters">
+          <option value="all">All chapters</option><option value="needs">Needs attention</option><option value="notstarted">Not started</option><option value="done">Completed (R9)</option>
+        </select>
+        <button class="btn btn-sm" id="mindMapExpandAll">Expand all</button><button class="btn btn-sm" id="mindMapCollapseAll">Collapse all</button>
       </div>
+      <div class="mm-legend"><span>⚪ Not started</span><span>🟡 Early revision (R1–R3)</span><span>🟢 On track (R4+)</span><span>🟠 High priority</span><span>🔴 Critical</span><span>🚨 Overdue</span></div>
+      <div class="mindmap-canvas"><div class="mm-grid" id="mindMapGrid"></div></div>
     </div>
   </div>
 
@@ -1721,24 +1743,61 @@
       document.getElementById('modalCurves').classList.remove('open');
     };
 
-    // Mind Map Modal
-    document.getElementById('btnMindMap').onclick = () => {
-      if (!state.subjects.length) {
-        document.getElementById('mindMapGrid').innerHTML = `<div class="kpi-sub">Add or load subjects to visualize your syllabus mind map.</div>`;
-      } else {
-        document.getElementById('mindMapGrid').innerHTML = state.subjects.map(s => {
-          const chs = state.chapters.filter(c => c.subject === s);
-          const started = chs.filter(c => c.readings > 0).length;
-          return `<div class="mm-node ${started > 0 ? 'active' : ''}">
-            <div class="badge" style="display:inline-block;margin-bottom:6px">${state.pillars[s] || inferPillar(s)}</div>
-            <div style="font-weight:700;font-size:0.95rem">${s}</div>
-            <div class="kpi-sub" style="margin-top:4px">${started} / ${chs.length} chapters initiated</div>
-            <div class="mm-link">${chs.slice(0, 3).map(c => c.title).join(' • ') || 'No chapters yet'}</div>
-          </div>`;
+    // Syllabus mind-map: subject -> chapter branches with revision signals
+    function mindMapStatus(ch) {
+      const today = todayISO();
+      const overdue = ch.nextDue && ch.nextDue < today;
+      if (overdue) return {emoji:'🚨', cls:'mm-overdue', label:'Overdue'};
+      if (ch.priority === 'Critical') return {emoji:'🔴', cls:'mm-critical', label:'Critical'};
+      if (ch.priority === 'High') return {emoji:'🟠', cls:'mm-high', label:'High priority'};
+      if (ch.readings === 0) return {emoji:'⚪', cls:'', label:'Not started'};
+      if (ch.readings <= 3) return {emoji:'🟡', cls:'', label:'Early revisions'};
+      return {emoji:'🟢', cls:'', label:'On track'};
+    }
+    function escapeMindMapText(value) { return String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+    function renderMindMap() {
+      const query = (document.getElementById('mindMapSearch')?.value || '').trim().toLowerCase();
+      const filter = document.getElementById('mindMapFilter')?.value || 'all';
+      const chapters = state.chapters;
+      const started = chapters.filter(c=>c.readings>0).length;
+      const needs = chapters.filter(c=>mindMapStatus(c).emoji==='🚨'||c.priority==='Critical'||c.priority==='High'||c.readings<=3).length;
+      const complete = chapters.filter(c=>c.readings>=9).length;
+      document.getElementById('mindMapSummary').innerHTML = `<div class="mm-stat"><b>${state.subjects.length}</b><small>Subjects</small></div><div class="mm-stat"><b>${chapters.length}</b><small>Total chapters</small></div><div class="mm-stat"><b>${started}/${chapters.length}</b><small>Started</small></div><div class="mm-stat"><b>${needs}</b><small>Needs attention</small></div>`;
+      const subjectHtml = state.subjects.map(subject => {
+        const all = chapters.filter(c=>c.subject===subject);
+        const matching = all.filter(ch=>{
+          const status=mindMapStatus(ch);
+          const text=(subject+' '+ch.title+' '+(state.pillars[subject]||inferPillar(subject))).toLowerCase();
+          if(query && !text.includes(query)) return false;
+          if(filter==='needs' && !(status.emoji==='🚨'||ch.priority==='Critical'||ch.priority==='High'||ch.readings<=3)) return false;
+          if(filter==='notstarted' && ch.readings!==0) return false;
+          if(filter==='done' && ch.readings<9) return false;
+          return true;
+        }).sort((a,b)=>{
+          const score=c=>c.nextDue&&c.nextDue<todayISO()?0:c.priority==='Critical'?1:c.priority==='High'?2:c.readings===0?3:c.readings<=3?4:5;
+          return score(a)-score(b)||a.title.localeCompare(b.title);
+        });
+        if(query && !subject.toLowerCase().includes(query) && !matching.length) return '';
+        const startedCount=all.filter(c=>c.readings>0).length;
+        const dueCount=all.filter(c=>mindMapStatus(c).emoji==='🚨').length;
+        const chaptersHtml=matching.map(ch=>{
+          const st=mindMapStatus(ch);
+          return `<div class="mm-chapter ${st.cls}" title="${escapeMindMapText(st.label)} • ${ch.readings}/9 revisions • ${escapeMindMapText(ch.priority)}"><span class="mm-status">${st.emoji}</span><span class="mm-ch-title">${escapeMindMapText(ch.title)}</span><span class="mm-ch-meta">R${ch.readings}/9</span></div>`;
         }).join('');
-      }
-      document.getElementById('modalMindMap').classList.add('open');
-    };
+        return `<section class="mm-node mm-subject"><div class="mm-subject-head"><span class="mm-subject-title">📚 ${escapeMindMapText(subject)}</span><span class="badge">${escapeMindMapText(state.pillars[subject]||inferPillar(subject))}</span><span class="mm-subject-meta">${startedCount}/${all.length} started · ${dueCount} overdue</span><button class="btn btn-sm" data-mm-toggle="${escapeMindMapText(subject)}">Collapse</button></div><div class="mm-chapter-branch" data-mm-branch="${escapeMindMapText(subject)}">${chaptersHtml||'<span class="kpi-sub">No chapters match this filter.</span>'}</div></section>`;
+      }).join('');
+      document.getElementById('mindMapGrid').innerHTML = subjectHtml || '<div class="kpi-sub">No subjects yet. Add or import your syllabus to build the map.</div>';
+    }
+    document.getElementById('btnMindMap').onclick = () => { renderMindMap(); document.getElementById('modalMindMap').classList.add('open'); };
+    document.getElementById('mindMapSearch').addEventListener('input',renderMindMap);
+    document.getElementById('mindMapFilter').addEventListener('change',renderMindMap);
+    document.getElementById('mindMapExpandAll').onclick=()=>document.querySelectorAll('[data-mm-branch]').forEach(el=>el.style.display='flex');
+    document.getElementById('mindMapCollapseAll').onclick=()=>document.querySelectorAll('[data-mm-branch]').forEach(el=>el.style.display='none');
+    document.getElementById('mindMapGrid').addEventListener('click',e=>{
+      const btn=e.target.closest('[data-mm-toggle]'); if(!btn)return;
+      const branch=document.querySelector(`[data-mm-branch="${CSS.escape(btn.dataset.mmToggle)}"]`);
+      if(branch) branch.style.display=branch.style.display==='none'?'flex':'none';
+    });
 
     // Export JSON
     document.getElementById('btnExport').onclick = () => {
