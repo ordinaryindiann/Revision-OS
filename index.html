@@ -2502,7 +2502,12 @@
         setStatus('online', 'Synced to Cloud');
       } catch (err) {
         console.error('Cloud fetch failed:', err);
-        setStatus('', 'Sync Error');
+        // Keep the local workspace usable if cloud access fails. Never blank local data.
+        const isOwner = (user.email || '').toLowerCase() === 'shivamvyadav999@gmail.com';
+        if (isOwner) window.__reviseOS.loadOwnerUPSCIfEmpty();
+        const errorCode = err && err.code ? err.code : 'unknown';
+        setStatus('', 'Cloud unavailable · Local data');
+        syncText.title = `Cloud sync failed (${errorCode}). Local workspace remains available; retry after checking connection or Firebase permissions.`;
       }
     }
 
