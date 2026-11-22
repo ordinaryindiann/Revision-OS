@@ -702,6 +702,33 @@
     .ws-stepper .r-pill:hover { transform:translateY(-2px); }
     @media(max-width:560px){.ros-edit-panel{padding:17px;border-radius:18px}.ros-date-cell{min-height:34px}.ws-ch{padding:14px}}
 
+    /* ===== Popup stability & polish (fixes flicker / double scrollbars / clipped menus) ===== */
+    /* Entrance animations only on first paint, never on every re-render */
+    .subject-tile, .calendar-day, .mm-node { animation: none; }
+    .subject-tile-grid.first-paint .subject-tile { animation: rosFadeUp .28s var(--ros-ease) backwards; }
+    /* 'backwards' (not 'both') so no lingering transform traps fixed-position menus or blurs text */
+    .modal-overlay.open .modal { animation: rosModalIn .22s var(--ros-ease) backwards; }
+    .subject-tile::after { filter: none; background: radial-gradient(closest-side, var(--tile-accent-soft), transparent); }
+
+    /* One scroll area: header + footer stay fixed, only the chapter list scrolls */
+    .ws-modal { display: flex; flex-direction: column; overflow: hidden; max-height: min(92vh, 900px); }
+    .ws-hero { flex: none; }
+    .ws-body { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; overflow: hidden; }
+    .ws-toolbar, .ws-body .inline-add { flex: none; }
+    .ws-list { flex: 1 1 auto; min-height: 120px; max-height: none; padding: 2px 6px 12px 0; overscroll-behavior: contain; scrollbar-gutter: stable; }
+    @media (max-height: 700px) {
+      .ws-modal { overflow-y: auto; }
+      .ws-body { flex: none; overflow: visible; }
+      .ws-list { flex: none; max-height: 45vh; }
+    }
+    /* No hover movement = no hover on/off jitter at element edges */
+    .ws-ch { transition: border-color .2s var(--ros-ease), box-shadow .2s var(--ros-ease), background .2s var(--ros-ease); }
+    .ws-ch:hover { transform: none; }
+    .ws-stepper .r-pill:hover { transform: none; box-shadow: 0 0 0 2px color-mix(in srgb, var(--tile-accent) 30%, transparent); }
+
+    /* Menus float above everything (positioned by JS), never clipped by the list */
+    .ch-more-menu { position: fixed; z-index: 1500; min-width: 200px; padding: 6px; border-radius: 12px; box-shadow: 0 18px 44px rgba(0,0,0,.4); }
+    .ch-more-menu button { display: flex; align-items: center; gap: 9px; white-space: nowrap; font: inherit; font-size: .82rem; font-weight: 600; padding: 9px 11px; }
   </style>
 </head>
 <body>
@@ -1424,6 +1451,7 @@
     })();
 
     let activeSubjectModal = null;
+    let tilesPainted = false;
     let wsFilter = 'all';
     const HUE_AUTO = [88, 200, 265, 32, 330, 165, 12, 230, 55, 190];
     const HUE_SWATCHES = [88, 55, 32, 12, 330, 290, 265, 230, 200, 190, 165, 140];
@@ -1543,6 +1571,7 @@
       document.getElementById('wsColorWrap')?.classList.remove('open');
       document.getElementById('wsChapterSearch').value = '';
       renderSubjectWorkspace(subj);
+      document.getElementById('wsChaptersList').scrollTop = 0;
       document.getElementById('modalSubjectWorkspace').classList.add('open');
     }
 
@@ -1616,6 +1645,7 @@
       });
 
       const listEl = document.getElementById('wsChaptersList');
+      const prevScroll = listEl.scrollTop; // keep position when the list re-renders (prevents jump-to-top flicker)
       if (!filtered.length) {
         listEl.innerHTML = `<div class="ws-empty"><div style="font-size:1.6rem">🗂️</div><div>No matching chapters${allCh.length ? '' : ' yet'}.</div><div class="kpi-sub">${allCh.length ? 'Try a different filter or search.' : 'Add your first chapter below.'}</div></div>`;
         return;
@@ -1666,6 +1696,7 @@
           </div>
         </div>`;
       }).join('');
+      listEl.scrollTop = prevScroll;
     }
 
     function escapeHtml(value){return String(value??'').replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c]));}
@@ -1899,7 +1930,8 @@
           </div>
           <div class="tile-footer"><span>↻ ${escapeMindMapText(curveName)}</span><span class="open-chip">Open chapters <i>→</i></span></div></div>`;
       }).join('');
-      container.innerHTML = `<div class="subject-tile-grid" id="subjectTileGrid">${tilesHtml || '<p class="kpi-sub">No subjects match these filters.</p>'}</div>`;
+      container.innerHTML = `<div class="subject-tile-grid${tilesPainted ? '' : ' first-paint'}" id="subjectTileGrid">${tilesHtml || '<p class="kpi-sub">No subjects match these filters.</p>'}</div>`;
+      if (tilesHtml) tilesPainted = true;
       // Drag-to-reorder tiles; save ordering only, chapter data remains untouched.
       const grid = document.getElementById('subjectTileGrid');
       if (grid) {
@@ -1973,6 +2005,24 @@
     }
     document.getElementById('btnRebalance').onclick = rebalanceOverdue;
 
+    // "More" menus: fixed-position so the scrolling list never clips them; flip upward near the screen bottom
+    function positionMoreMenu(wrap) {
+      const btn = wrap.querySelector('button'), menu = wrap.querySelector('.ch-more-menu');
+      if (!btn || !menu) return;
+      const r = btn.getBoundingClientRect(), mw = menu.offsetWidth, mh = menu.offsetHeight;
+      let top = r.bottom + 6;
+      if (top + mh > window.innerHeight - 8) top = Math.max(8, r.top - mh - 6);
+      const left = Math.min(Math.max(8, r.right - mw), window.innerWidth - mw - 8);
+      menu.style.top = top + 'px'; menu.style.left = left + 'px'; menu.style.right = 'auto';
+    }
+    const closeMoreMenus = () => document.querySelectorAll('.ch-more-wrap.open').forEach(w => w.classList.remove('open'));
+    document.addEventListener('click', e => {
+      if (!e.target.closest('.ch-more-wrap') || e.target.closest('.ch-more-menu button')) closeMoreMenus();
+    });
+    document.addEventListener('scroll', closeMoreMenus, true);
+    window.addEventListener('resize', closeMoreMenus);
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeMoreMenus(); });
+
     // Event Delegation
     document.body.addEventListener('click', e => {
       const tile = e.target.closest('[data-open-tile]');
@@ -2014,12 +2064,18 @@
         return;
       }
       const subjectMoreBtn = e.target.closest('#subjectMoreBtn');
-      if (subjectMoreBtn) { document.getElementById('subjectMoreWrap').classList.toggle('open'); return; }
+      if (subjectMoreBtn) {
+        const sw = document.getElementById('subjectMoreWrap');
+        document.querySelectorAll('.ch-more-wrap.open').forEach(w => { if (w !== sw) w.classList.remove('open'); });
+        sw.classList.toggle('open'); if (sw.classList.contains('open')) positionMoreMenu(sw);
+        return;
+      }
       const moreBtn = e.target.closest('[data-ch-more]');
       if (moreBtn) {
         const wrap = moreBtn.closest('.ch-more-wrap');
         document.querySelectorAll('.ch-more-wrap.open').forEach(w => { if (w !== wrap) w.classList.remove('open'); });
-        wrap.classList.toggle('open'); return;
+        wrap.classList.toggle('open'); if (wrap.classList.contains('open')) positionMoreMenu(wrap);
+        return;
       }
       const renameChBtn = e.target.closest('[data-rename-ch]');
       if (renameChBtn) {
