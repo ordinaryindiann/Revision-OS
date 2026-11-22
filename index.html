@@ -524,6 +524,31 @@
       .ws-color-pop { right: auto; left: 0; }
     }
 
+
+    /* ===== In-app dialog ===== */
+    input[type="date"] { color-scheme: dark; }
+    [data-theme="light"] input[type="date"] { color-scheme: light; }
+    .dlg-overlay { z-index: 1300; background: rgba(0,0,0,.62); backdrop-filter: blur(3px); }
+    .dlg { max-width: 440px; padding: 22px; border-radius: 22px; }
+    .dlg-head { display: flex; align-items: flex-start; gap: 14px; margin-bottom: 16px; }
+    .dlg-head h3 { font-size: 1.1rem; letter-spacing: -.01em; margin-bottom: 4px; overflow-wrap: anywhere; }
+    .dlg-head .kpi-sub { line-height: 1.45; }
+    .dlg-icon { flex: none; width: 42px; height: 42px; border-radius: 13px; display: grid; place-items: center; font-size: 1.1rem; background: rgba(198,243,107,.14); color: var(--ros-accent); border: 1px solid rgba(198,243,107,.3); }
+    [data-theme="light"] .dlg-icon { background: rgba(87,122,32,.12); border-color: rgba(87,122,32,.3); }
+    .dlg-icon.danger { background: rgba(239,68,68,.14); border-color: rgba(239,68,68,.4); color: #F87171; }
+    .dlg-input { width: 100%; margin-top: 8px; padding: 11px 13px; font-size: .95rem; }
+    .dlg-input.invalid { border-color: var(--ros-danger); }
+    .dlg-quick { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+    .dlg-quick button { border: 1px solid var(--ros-border); background: var(--ros-surface-raised); color: var(--ros-text); font-size: .74rem; font-weight: 600; padding: 5px 10px; border-radius: 999px; cursor: pointer; }
+    .dlg-quick button:hover { border-color: var(--ros-accent); color: var(--ros-accent); }
+    .dlg-quick button.clear { color: var(--ros-text-muted); border-style: dashed; }
+    #dlgPreview { margin-top: 10px; min-height: 1.2em; }
+    .dlg-error { display: none; margin-top: 10px; padding: 8px 11px; border-radius: 9px; font-size: .78rem; color: #F87171; background: rgba(239,68,68,.1); border: 1px solid rgba(239,68,68,.35); }
+    .dlg-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px; }
+    .dlg-actions .btn { padding: 9px 16px; font-size: .84rem; }
+    .btn-danger-solid { background: #EF4444; border-color: #EF4444; color: #fff; }
+    .btn-danger-solid:hover { opacity: .92; }
+
     /* Subject Drawer / Chapter Workspace Modal */
     .chapter-workspace-head {
       display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
@@ -651,36 +676,6 @@
     .mm-chapter.mm-high{border-color:#e5a04b}
     .mm-filter{background:var(--ros-surface);color:var(--ros-text);border:1px solid var(--ros-border);border-radius:8px;padding:8px}
     @media(max-width:600px){.mm-summary{grid-template-columns:repeat(2,1fr)}.mm-chapter{max-width:100%;width:100%}.mm-chapter-branch{display:grid;grid-template-columns:1fr}}
-
-    /* In-app editing surfaces: no browser prompt/date picker interruptions */
-    .ros-edit-overlay { display:none; position:fixed; inset:0; z-index:1200; background:rgba(4,7,12,.72); backdrop-filter:blur(12px); align-items:center; justify-content:center; padding:16px; }
-    .ros-edit-overlay.open { display:flex; animation:rosFadeUp .16s ease both; }
-    .ros-edit-panel { width:min(440px,100%); max-height:90vh; overflow:auto; border:1px solid var(--ros-border); border-radius:22px; background:var(--ros-surface); box-shadow:0 28px 80px rgba(0,0,0,.45); padding:22px; }
-    .ros-edit-head { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:18px; }
-    .ros-edit-title { font-size:1.12rem; font-weight:800; letter-spacing:-.02em; }
-    .ros-edit-sub { color:var(--ros-text-muted); font-size:.78rem; margin-top:4px; }
-    .ros-edit-input { width:100%; border:1px solid var(--ros-border); border-radius:12px; background:var(--ros-bg); color:var(--ros-text); padding:12px 14px; font:inherit; outline:none; }
-    .ros-edit-input:focus { border-color:var(--ros-accent); box-shadow:0 0 0 3px color-mix(in srgb,var(--ros-accent) 18%,transparent); }
-    .ros-edit-actions { display:flex; justify-content:flex-end; gap:8px; margin-top:16px; }
-    .ros-date-month { display:flex; align-items:center; justify-content:space-between; gap:8px; margin:12px 0; }
-    .ros-date-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:5px; }
-    .ros-date-dayname { color:var(--ros-text-muted); font-size:.66rem; text-align:center; padding:5px 0; font-weight:700; }
-    .ros-date-cell { border:1px solid transparent; border-radius:10px; background:var(--ros-surface-raised); color:var(--ros-text); min-height:38px; cursor:pointer; font-weight:600; }
-    .ros-date-cell:hover { border-color:var(--ros-accent); }
-    .ros-date-cell.muted { opacity:.35; }
-    .ros-date-cell.selected { background:var(--ros-accent); color:var(--ros-accent-text); }
-    .ros-date-cell.today { box-shadow:inset 0 0 0 1px var(--ros-accent); }
-    .ros-date-selected { margin-top:12px; border:1px solid var(--ros-border); background:var(--ros-bg); padding:10px 12px; border-radius:11px; color:var(--ros-text-muted); font-size:.8rem; }
-    .ws-ch { padding:16px 17px; border-radius:18px; background:linear-gradient(145deg,var(--ros-surface-raised),color-mix(in srgb,var(--ros-surface) 70%,var(--ros-bg))); }
-    .ws-ch:hover { transform:translateY(-2px); }
-    .ws-ch-title { font-size:1rem; font-weight:720; line-height:1.35; }
-    .ws-ch-meta { display:flex; gap:6px; flex-wrap:wrap; align-items:center; margin-top:7px; }
-    .ws-ch-actions { display:flex; align-items:center; gap:7px; }
-    .ws-stepper { padding-top:2px; }
-    .ws-stepper .r-pill { transition:transform .14s ease,background .14s ease,border-color .14s ease; }
-    .ws-stepper .r-pill:hover { transform:translateY(-2px); }
-    @media(max-width:560px){.ros-edit-panel{padding:17px;border-radius:18px}.ros-date-cell{min-height:34px}.ws-ch{padding:14px}}
-
   </style>
 </head>
 <body>
@@ -885,7 +880,7 @@
             <button class="btn" id="subjectMoreBtn" aria-label="Subject options">More ⋯</button>
             <div class="ch-more-menu">
               <button data-rename-subject>✎ Rename Subject</button>
-              <button data-edit-category>▦ Assign / Change Tag</button><button data-remove-tag>⊘ Remove Tag</button>
+              <button data-edit-category>▦ Assign / Change Tag</button>
               <button data-delete-subject class="danger">Delete Subject</button>
             </div>
           </div>
@@ -904,7 +899,7 @@
 
         <div class="inline-add">
           <input type="text" class="text-input" id="wsNewChapterTitle" style="flex:1" placeholder="Add a new chapter to this subject..." />
-          <button type="button" class="btn" id="wsNewChapterDateBtn">📅 <span id="wsNewChapterDateLabel">Schedule date</span></button><input type="hidden" id="wsNewChapterDate" value="" />
+          <input type="date" class="curve-select" id="wsNewChapterDate" title="Optional: schedule its first study date" style="min-width:145px" />
           <select class="curve-select" id="wsNewChapterPrio" style="min-width:130px">
             <option value="Moderate">Moderate</option>
             <option value="High">High</option>
@@ -1038,22 +1033,22 @@
     </div>
   </div>
 
-
-  <!-- Branded in-app edit dialog -->
-  <div class="ros-edit-overlay" id="rosTextEditOverlay" role="dialog" aria-modal="true">
-    <div class="ros-edit-panel">
-      <div class="ros-edit-head"><div><div class="ros-edit-title" id="rosTextEditTitle">Edit</div><div class="ros-edit-sub" id="rosTextEditSubtitle">Make a change inside Revision OS.</div></div><button class="btn" data-ros-edit-close>✕</button></div>
-      <input class="ros-edit-input" id="rosTextEditInput" type="text" autocomplete="off" />
-      <div class="ros-edit-actions"><button class="btn" data-ros-edit-close>Cancel</button><button class="btn btn-accent" id="rosTextEditSave">Save changes</button></div>
-    </div>
-  </div>
-  <!-- Custom date calendar -->
-  <div class="ros-edit-overlay" id="rosDateOverlay" role="dialog" aria-modal="true">
-    <div class="ros-edit-panel">
-      <div class="ros-edit-head"><div><div class="ros-edit-title" id="rosDateTitle">Schedule date</div><div class="ros-edit-sub">Choose a date using the in-app calendar.</div></div><button class="btn" data-ros-date-close>✕</button></div>
-      <div class="ros-date-month"><button class="btn btn-sm" id="rosDatePrev">←</button><strong id="rosDateMonthLabel"></strong><button class="btn btn-sm" id="rosDateNext">→</button></div>
-      <div class="ros-date-grid" id="rosDateGrid"></div><div class="ros-date-selected" id="rosDateSelectedLabel"></div>
-      <div class="ros-edit-actions"><button class="btn" id="rosDateClear">Clear date</button><button class="btn" id="rosDateToday">Today</button><button class="btn" id="rosDateCancel">Cancel</button><button class="btn btn-accent" id="rosDateConfirm">Set date</button></div>
+  <!-- In-app dialog (replaces native prompt / confirm / alert) -->
+  <div class="modal-overlay dlg-overlay" id="modalDialog">
+    <div class="modal dlg" role="dialog" aria-modal="true" aria-labelledby="dlgTitle">
+      <div class="dlg-head">
+        <div class="dlg-icon" id="dlgIcon">✎</div>
+        <div style="min-width:0">
+          <h3 id="dlgTitle">Title</h3>
+          <p class="kpi-sub" id="dlgMsg"></p>
+        </div>
+      </div>
+      <div id="dlgBody"></div>
+      <div class="dlg-error" id="dlgErr"></div>
+      <div class="dlg-actions">
+        <button class="btn" id="dlgCancel">Cancel</button>
+        <button class="btn btn-accent" id="dlgOk">Save</button>
+      </div>
     </div>
   </div>
 
@@ -1245,14 +1240,16 @@
       return 'Core Syllabus Modules';
     }
 
-    function addDays(dateStr, days) {
-      const base = dateStr && !isNaN(new Date(dateStr).getTime()) ? new Date(dateStr) : new Date();
-      base.setDate(base.getDate() + (Number(days) || 1));
-      return base.toISOString().slice(0, 10);
+    function todayISO() {
+      const d = new Date();
+      return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
     }
 
-    function todayISO() {
-      return new Date().toISOString().slice(0, 10);
+    function addDays(dateStr, days) {
+      const iso = (dateStr && /^\d{4}-\d{2}-\d{2}/.test(dateStr)) ? dateStr.slice(0, 10) : todayISO();
+      const [y, m, d] = iso.split('-').map(Number);
+      const n = Number.isFinite(Number(days)) ? Number(days) : 1;
+      return new Date(Date.UTC(y, m - 1, d + n)).toISOString().slice(0, 10);
     }
 
     function buildBlankState() {
@@ -1405,30 +1402,6 @@
       const btn = document.getElementById('undoChangeBtn'); if (btn) btn.style.display = 'none';
       saveState();
     }
-    let rosTextCallback = null;
-    function openRosTextEdit(title, subtitle, initial, callback, placeholder='Enter a name') {
-      rosTextCallback = callback;
-      document.getElementById('rosTextEditTitle').textContent = title;
-      document.getElementById('rosTextEditSubtitle').textContent = subtitle;
-      const inp=document.getElementById('rosTextEditInput'); inp.value=initial||''; inp.placeholder=placeholder;
-      document.getElementById('rosTextEditOverlay').classList.add('open');
-      inp.focus(); inp.select();
-    }
-    function closeRosTextEdit(){document.getElementById('rosTextEditOverlay').classList.remove('open');rosTextCallback=null;}
-    document.querySelectorAll('[data-ros-edit-close]').forEach(b=>b.addEventListener('click',closeRosTextEdit));
-    document.getElementById('rosTextEditSave').onclick=()=>{const value=document.getElementById('rosTextEditInput').value.trim();if(!value)return;const cb=rosTextCallback;closeRosTextEdit();if(cb)cb(value);};
-    document.getElementById('rosTextEditInput').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('rosTextEditSave').click();if(e.key==='Escape')closeRosTextEdit();});
-    let rosDateCursor=new Date(); let rosDateDraft=null; let rosDateCallback=null;
-    function isoLocal(d){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
-    function openRosDate(initial, callback, title='Schedule date') {rosDateCallback=callback;rosDateDraft=initial||isoLocal(new Date());const parts=rosDateDraft.split('-').map(Number);rosDateCursor=new Date(parts[0],parts[1]-1,1);document.getElementById('rosDateTitle').textContent=title;renderRosDateCalendar();document.getElementById('rosDateOverlay').classList.add('open');}
-    function renderRosDateCalendar(){const grid=document.getElementById('rosDateGrid');const y=rosDateCursor.getFullYear(),m=rosDateCursor.getMonth();document.getElementById('rosDateMonthLabel').textContent=rosDateCursor.toLocaleDateString('en-IN',{month:'long',year:'numeric'});const first=new Date(y,m,1),offset=first.getDay(),start=new Date(y,m,1-offset);let out=['S','M','T','W','T','F','S'].map(d=>`<div class="ros-date-dayname">${d}</div>`).join('');const today=isoLocal(new Date());for(let i=0;i<42;i++){const d=new Date(start);d.setDate(start.getDate()+i);const iso=isoLocal(d);out+=`<button type="button" class="ros-date-cell ${d.getMonth()!==m?'muted':''} ${iso===rosDateDraft?'selected':''} ${iso===today?'today':''}" data-ros-date="${iso}">${d.getDate()}</button>`;}grid.innerHTML=out;document.getElementById('rosDateSelectedLabel').textContent=rosDateDraft?`Selected · ${new Date(rosDateDraft+'T12:00:00').toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}`:'No date selected';}
-    document.getElementById('rosDateGrid').addEventListener('click',e=>{const b=e.target.closest('[data-ros-date]');if(!b)return;rosDateDraft=b.dataset.rosDate;renderRosDateCalendar();});
-    document.getElementById('rosDatePrev').onclick=()=>{rosDateCursor.setMonth(rosDateCursor.getMonth()-1);renderRosDateCalendar();};document.getElementById('rosDateNext').onclick=()=>{rosDateCursor.setMonth(rosDateCursor.getMonth()+1);renderRosDateCalendar();};
-    document.getElementById('rosDateToday').onclick=()=>{rosDateDraft=isoLocal(new Date());rosDateCursor=new Date();rosDateCursor.setDate(1);renderRosDateCalendar();};document.getElementById('rosDateClear').onclick=()=>{rosDateDraft=null;renderRosDateCalendar();};
-    function closeRosDate(){document.getElementById('rosDateOverlay').classList.remove('open');rosDateCallback=null;}
-    document.getElementById('rosDateCancel').onclick=closeRosDate;document.querySelectorAll('[data-ros-date-close]').forEach(b=>b.onclick=closeRosDate);
-    document.getElementById('rosDateConfirm').onclick=()=>{const cb=rosDateCallback;const val=rosDateDraft;closeRosDate();if(cb)cb(val);};
-    document.getElementById('wsNewChapterDateBtn').onclick=()=>openRosDate(document.getElementById('wsNewChapterDate').value,(date)=>{document.getElementById('wsNewChapterDate').value=date||'';document.getElementById('wsNewChapterDateLabel').textContent=date?dateLabel(date):'Schedule date';},'Schedule first study date');
 
     function saveState() {
       state.updatedAt = Date.now();
@@ -1850,7 +1823,8 @@
     }
 
     // Event Delegation
-    document.body.addEventListener('click', e => {
+    document.body.addEventListener('click', async e => {
+      if (e.target.closest('.ch-more-menu button')) document.querySelectorAll('.ch-more-wrap.open').forEach(w => w.classList.remove('open'));
       const tile = e.target.closest('[data-open-tile]');
       if (tile) {
         openSubjectWorkspace(tile.dataset.openTile);
@@ -1894,28 +1868,43 @@
       }
       const renameChBtn = e.target.closest('[data-rename-ch]');
       if (renameChBtn) {
-        const ch = state.chapters.find(c => c.id === renameChBtn.dataset.renameCh); if (!ch) return;
-        openRosTextEdit('Rename chapter','Update the chapter title without leaving this workspace.',ch.title,(newTitle)=>{if(newTitle!==ch.title){captureUndo('chapter rename');ch.title=newTitle;saveState();}},'Chapter name');
+        const chId = renameChBtn.dataset.renameCh;
+        const ch0 = state.chapters.find(c => c.id === chId); if (!ch0) return;
+        const newTitle = await askText('Rename chapter', ch0.title, { label: 'Chapter name', okText: 'Rename', emptyMessage: 'Please enter a chapter name.' });
+        const ch = state.chapters.find(c => c.id === chId);
+        if (ch && newTitle && newTitle !== ch.title) { captureUndo('chapter rename'); ch.title = newTitle; saveState(); }
         return;
       }
       const scheduleChBtn = e.target.closest('[data-schedule-ch]');
       if (scheduleChBtn) {
-        const ch = state.chapters.find(c => c.id === scheduleChBtn.dataset.scheduleCh);
+        const chId = scheduleChBtn.dataset.scheduleCh;
+        const ch0 = state.chapters.find(c => c.id === chId);
+        if (!ch0) return;
+        const date = await askDate('Set study date', ch0.nextDue || '', {
+          label: 'Scheduled date', message: ch0.title, okText: 'Save date', allowEmpty: true,
+          validate: v => (!v || (/^\d{4}-\d{2}-\d{2}$/.test(v) && !isNaN(new Date(v).getTime()))) ? '' : 'Please pick a valid date.'
+        });
+        if (date === null) return;
+        const ch = state.chapters.find(c => c.id === chId);
         if (!ch) return;
-        openRosDate(ch.nextDue,(date)=>{captureUndo('schedule date change');ch.nextDue=date||null;saveState();},'Change chapter date'); return;
+        captureUndo('schedule date change'); ch.nextDue = date || null; saveState(); return;
       }
       const delCh = e.target.closest('[data-delete-ch]');
       if (delCh) {
         const ch = state.chapters.find(c => c.id === delCh.dataset.deleteCh);
-        if (ch && confirm(`Delete chapter "${ch.title}"? You can use Undo immediately to restore it.`)) {
-          captureUndo('chapter deletion'); state.chapters = state.chapters.filter(c => c.id !== ch.id); saveState();
-        } return;
+        if (!ch) return;
+        const okDel = await askConfirm('Delete this chapter?', `"${ch.title}" will be removed. You can use Undo right after to restore it.`, { danger: true, okText: 'Delete chapter' });
+        if (okDel) { captureUndo('chapter deletion'); state.chapters = state.chapters.filter(c => c.id !== ch.id); saveState(); }
+        return;
       }
       const renameSubjBtn = e.target.closest('[data-rename-subject]');
       if (renameSubjBtn) {
         if (!activeSubjectModal) return; const oldName = activeSubjectModal;
-        openRosTextEdit('Rename subject','Your chapters and settings will remain attached to this subject.',oldName,(newName)=>{
-          const clean = newName.trim(); if (state.subjects.includes(clean)) { openRosTextEdit('Rename subject','That name is already in use. Choose a different subject name.',oldName,(retry)=>{const retryClean=retry.trim();if(state.subjects.includes(retryClean)){openRosTextEdit('Rename subject','That name is already in use. Try another.',oldName,()=>{},'Subject name');return;}captureUndo('subject rename');state.subjects=state.subjects.map(x=>x===oldName?retryClean:x);state.chapters.forEach(c=>{if(c.subject===oldName)c.subject=retryClean;});if(state.subjectCurves[oldName]!==undefined){state.subjectCurves[retryClean]=state.subjectCurves[oldName];delete state.subjectCurves[oldName];}if(state.pillars[oldName]!==undefined){state.pillars[retryClean]=state.pillars[oldName];delete state.pillars[oldName];}if(state.subjectTags[oldName]!==undefined){state.subjectTags[retryClean]=state.subjectTags[oldName];delete state.subjectTags[oldName];}if(state.subjectColors&&state.subjectColors[oldName]!==undefined){state.subjectColors[retryClean]=state.subjectColors[oldName];delete state.subjectColors[oldName];}state.subjectOrder=state.subjectOrder.map(x=>x===oldName?retryClean:x);activeSubjectModal=retryClean;saveState();},'Subject name'); return; }
+        const clean = await askText('Rename subject', oldName, {
+          label: 'Subject name', okText: 'Rename', emptyMessage: 'Please enter a subject name.',
+          validate: v => (v !== oldName && state.subjects.includes(v)) ? 'A subject with that name already exists.' : ''
+        });
+        if (clean && clean !== oldName && state.subjects.includes(oldName)) {
           captureUndo('subject rename'); state.subjects = state.subjects.map(x => x === oldName ? clean : x);
           state.chapters.forEach(c => { if (c.subject === oldName) c.subject = clean; });
           if (state.subjectCurves[oldName] !== undefined) { state.subjectCurves[clean] = state.subjectCurves[oldName]; delete state.subjectCurves[oldName]; }
@@ -1924,23 +1913,27 @@
           if (state.subjectColors && state.subjectColors[oldName] !== undefined) { state.subjectColors[clean] = state.subjectColors[oldName]; delete state.subjectColors[oldName]; }
           state.subjectOrder = state.subjectOrder.map(x => x === oldName ? clean : x);
           activeSubjectModal = clean; saveState();
-        }); return;
+        } return;
       }
       const editCategoryBtn = e.target.closest('[data-edit-category]');
       if (editCategoryBtn) {
         if (!activeSubjectModal) return;
         const subj = activeSubjectModal;
         const oldTag = state.subjectTags[subj] || '';
-        openRosTextEdit('Assign subject tag','Optional group name. Save a new tag or leave empty and use Remove Tag below.',oldTag,(newTag)=>{captureUndo('subject tag change');if(newTag.trim())state.subjectTags[subj]=newTag.trim();else delete state.subjectTags[subj];saveState();},'Tag name');
         document.getElementById('subjectMoreWrap')?.classList.remove('open');
+        const newTag = await askText('Subject tag', oldTag, { label: 'Tag / folder name', message: 'Optional. Leave blank to remove the tag.', placeholder: 'e.g. Prelims, GS-1', allowEmpty: true, okText: 'Save tag' });
+        if (newTag !== null && newTag !== oldTag) {
+          captureUndo('subject tag change');
+          if (newTag) state.subjectTags[subj] = newTag; else delete state.subjectTags[subj];
+          saveState();
+        }
         return;
       }
-      const removeTagBtn = e.target.closest('[data-remove-tag]');
-      if (removeTagBtn) { if(activeSubjectModal){captureUndo('subject tag removal');delete state.subjectTags[activeSubjectModal];saveState();}document.getElementById('subjectMoreWrap')?.classList.remove('open');return;}
       const delSubjBtn = e.target.closest('[data-delete-subject]');
       if (delSubjBtn) {
         if (!activeSubjectModal) return; const subj = activeSubjectModal; const count = state.chapters.filter(c => c.subject === subj).length;
-        if (confirm(`Delete subject "${subj}" and its ${count} chapter${count === 1 ? '' : 's'}? You can use Undo immediately to restore it.`)) {
+        const okDelSubj = await askConfirm('Delete this subject?', `"${subj}" and its ${count} chapter${count === 1 ? '' : 's'} will be removed. You can use Undo right after to restore it.`, { danger: true, okText: 'Delete subject' });
+        if (okDelSubj) {
           captureUndo('subject deletion'); state.chapters = state.chapters.filter(c => c.subject !== subj); state.subjects = state.subjects.filter(x => x !== subj);
           delete state.subjectCurves[subj]; delete state.pillars[subj]; delete state.subjectTags[subj]; if (state.subjectColors) delete state.subjectColors[subj]; state.subjectOrder = state.subjectOrder.filter(x => x !== subj); activeSubjectModal = null;
           document.getElementById('modalSubjectWorkspace').classList.remove('open'); saveState();
@@ -1996,7 +1989,7 @@
         nextDue: document.getElementById('wsNewChapterDate').value || null
       });
       document.getElementById('wsNewChapterTitle').value = '';
-      document.getElementById('wsNewChapterDate').value = ''; document.getElementById('wsNewChapterDateLabel').textContent='Schedule date';
+      document.getElementById('wsNewChapterDate').value = '';
       saveState();
     };
 
@@ -2010,8 +2003,8 @@
     document.getElementById('searchInput').oninput = () => renderAll();
 
     // Load 148 UPSC Syllabus Preset
-    document.getElementById('btnLoadUPSC').onclick = () => {
-      if (state.chapters.length > 0 && !confirm('Merge/Load the 148-chapter UPSC categorized syllabus into your workspace?')) return;
+    document.getElementById('btnLoadUPSC').onclick = async () => {
+      if (state.chapters.length > 0 && !(await askConfirm('Load UPSC syllabus?', 'This merges the 148-chapter categorized UPSC syllabus into your workspace. Existing chapters are kept.', { okText: 'Load syllabus' }))) return;
       const preset = buildUPSCPresetState();
       preset.subjects.forEach(s => {
         if (!state.subjects.includes(s)) state.subjects.push(s);
@@ -2025,8 +2018,8 @@
     };
 
     // Reset to Blank Slate
-    document.getElementById('btnResetBlank').onclick = () => {
-      if (confirm('Reset your workspace to a completely blank slate? All subjects and chapters will be cleared.')) {
+    document.getElementById('btnResetBlank').onclick = async () => {
+      if (await askConfirm('Reset workspace?', 'All subjects and chapters will be cleared and the workspace returns to a blank slate. This cannot be undone.', { danger: true, okText: 'Reset everything' })) {
         state = buildBlankState();
         activeSubjectModal = null;
         saveState();
@@ -2077,7 +2070,7 @@
             rows = parseCSVFallback(text);
           }
         } catch (err) {
-          alert('Could not read spreadsheet. Please ensure it is a valid .xlsx, .xls, or .csv file.');
+          notify('Could not read file', 'Please make sure it is a valid .xlsx, .xls, or .csv file.');
           return;
         }
 
@@ -2104,7 +2097,7 @@
         `).join('') + (cleaned.length > 20 ? `<div class="kpi-sub" style="padding:6px">...and ${cleaned.length - 20} more rows</div>` : '');
 
         previewBox.style.display = cleaned.length ? 'block' : 'none';
-        if (!cleaned.length) alert('No valid rows found. Make sure Column A has Subject Name and Column B has Chapter Name.');
+        if (!cleaned.length) notify('No valid rows found', 'Make sure Column A has the Subject Name and Column B has the Chapter Name.');
       };
       reader.readAsArrayBuffer(file);
     }
@@ -2301,6 +2294,98 @@
       a.click();
     };
 
+
+
+    // ===== In-app dialogs (replace native prompt / confirm / alert) =====
+    const Dlg = (() => {
+      const ov = document.getElementById('modalDialog');
+      const $ = id => document.getElementById(id);
+      let resolver = null, cfg = null;
+      const fmt = iso => dateLabel(iso, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+      function showErr(m) {
+        const e = $('dlgErr'); e.textContent = m || ''; e.style.display = m ? 'block' : 'none';
+        const i = $('dlgInput'); if (i) i.classList.toggle('invalid', !!m);
+      }
+      function finish(val) {
+        ov.classList.remove('open');
+        const r = resolver; resolver = null; cfg = null;
+        $('dlgBody').innerHTML = '';
+        if (r) r(val);
+      }
+      function cancel() {
+        if (!cfg) return;
+        finish(cfg.kind === 'confirm' ? false : cfg.kind === 'notice' ? undefined : null);
+      }
+      function submit() {
+        if (!cfg) return;
+        if (cfg.kind === 'confirm') return finish(true);
+        if (cfg.kind === 'notice') return finish(undefined);
+        const v = $('dlgInput').value.trim();
+        if (!v && !cfg.allowEmpty) return showErr(cfg.emptyMessage || 'This field cannot be empty.');
+        const err = cfg.validate ? cfg.validate(v) : '';
+        if (err) return showErr(err);
+        finish(v);
+      }
+      function open(c) {
+        if (resolver) cancel();
+        cfg = c;
+        return new Promise(res => {
+          resolver = res;
+          const icons = { text: '✎', date: '📅', confirm: c.danger ? '⚠️' : '❔', notice: 'ℹ️' };
+          $('dlgTitle').textContent = c.title || '';
+          const msg = $('dlgMsg'); msg.textContent = c.message || ''; msg.style.display = c.message ? 'block' : 'none';
+          $('dlgIcon').textContent = c.icon || icons[c.kind];
+          $('dlgIcon').className = 'dlg-icon' + (c.danger ? ' danger' : '');
+          const ok = $('dlgOk');
+          ok.textContent = c.okText || (c.kind === 'confirm' ? 'Confirm' : c.kind === 'notice' ? 'Got it' : 'Save');
+          ok.className = 'btn ' + (c.danger ? 'btn-danger-solid' : 'btn-accent');
+          $('dlgCancel').style.display = c.kind === 'notice' ? 'none' : '';
+          $('dlgCancel').textContent = c.cancelText || 'Cancel';
+          showErr('');
+          const body = $('dlgBody');
+          body.innerHTML = '';
+          if (c.kind === 'text' || c.kind === 'date') {
+            const isDate = c.kind === 'date';
+            body.innerHTML = `<label class="kpi-label" for="dlgInput">${escapeHtml(c.label || '')}</label>
+              <input class="text-input dlg-input" id="dlgInput" type="${isDate ? 'date' : 'text'}" autocomplete="off" placeholder="${escapeHtml(c.placeholder || '')}" />
+              ${isDate ? '<div class="dlg-quick" id="dlgQuick"></div><div class="kpi-sub" id="dlgPreview"></div>' : ''}`;
+            const inp = $('dlgInput');
+            inp.value = c.value || '';
+            inp.addEventListener('input', () => { showErr(''); if (isDate) updatePreview(); });
+            if (isDate) {
+              const t = todayISO();
+              const quick = [['Today', t], ['Tomorrow', addDays(t, 1)], ['In 3 days', addDays(t, 3)], ['Next week', addDays(t, 7)], ['In 2 weeks', addDays(t, 14)], ['Clear date', '']];
+              $('dlgQuick').innerHTML = quick.map(([l, v]) => `<button type="button" class="${v === '' ? 'clear' : ''}" data-q="${v}">${l}</button>`).join('');
+              $('dlgQuick').onclick = e => { const b = e.target.closest('[data-q]'); if (!b) return; inp.value = b.dataset.q; showErr(''); updatePreview(); };
+              updatePreview();
+            }
+          }
+          function updatePreview() {
+            const pv = $('dlgPreview'); if (!pv) return;
+            const v = $('dlgInput').value;
+            pv.textContent = v ? '📅 ' + fmt(v) : 'No date set — it will be cleared.';
+          }
+          ov.classList.add('open');
+          setTimeout(() => {
+            const inp = $('dlgInput');
+            if (inp) { inp.focus(); if (c.kind === 'text') inp.select(); }
+            else if (c.danger) $('dlgCancel').focus(); else ok.focus();
+          }, 30);
+        });
+      }
+      $('dlgOk').onclick = submit;
+      $('dlgCancel').onclick = cancel;
+      ov.addEventListener('mousedown', e => { if (e.target === ov) cancel(); });
+      ov.addEventListener('keydown', e => {
+        if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); cancel(); }
+        else if (e.key === 'Enter' && e.target.tagName !== 'BUTTON') { e.preventDefault(); submit(); }
+      });
+      return { open };
+    })();
+    const askText = (title, value, o = {}) => Dlg.open({ kind: 'text', title, value, ...o });
+    const askDate = (title, value, o = {}) => Dlg.open({ kind: 'date', title, value, ...o });
+    const askConfirm = (title, message, o = {}) => Dlg.open({ kind: 'confirm', title, message, ...o });
+    const notify = (title, message) => Dlg.open({ kind: 'notice', title, message });
 
     // Subject colour picker + chapter status filters (colour only: tiles keep all other content)
     (function () {
